@@ -463,9 +463,75 @@ export class ProblemGenerator {
   }
 
   genTellingTime(grade) {
-    const hours = Math.floor(Math.random() * 11) + 1
-    const minutes = [0, 15, 30, 45][Math.floor(Math.random() * 4)]
-    return this.createProblem(`What time is it when the hour hand is on ${hours} and minute hand on ${minutes / 5}?`, `${hours}:${minutes.toString().padStart(2, '0')}`, 'Telling Time', grade)
+    // ═══════════════════════════════════════════════════════════════
+    // ⏰ GRADE 3: Telling Time (Fixed!)
+    // ═══════════════════════════════════════════════════════════════
+    const questionType = Math.floor(Math.random() * 4)
+
+    if (questionType === 0) {
+      // Reading a time
+      const hours = Math.floor(Math.random() * 11) + 1
+      const minutes = [0, 15, 30, 45][Math.floor(Math.random() * 4)]
+      const correctTime = `${hours}:${minutes.toString().padStart(2, '0')}`
+      const wrongTimes = [
+        `${hours}:${(minutes + 15) % 60}`.replace(/:([0-9])$/, ':0$1'),
+        `${(hours % 12) + 1}:${minutes.toString().padStart(2, '0')}`,
+        `${hours}:${Math.abs(minutes - 30).toString().padStart(2, '0')}`
+      ]
+      return this.createProblem(
+        `A clock shows ${hours} o'clock and ${minutes} minutes. What time is it?`,
+        correctTime,
+        'Telling Time',
+        grade,
+        true,
+        [correctTime, ...wrongTimes]
+      )
+
+    } else if (questionType === 1) {
+      // Elapsed time
+      const startHour = Math.floor(Math.random() * 10) + 1
+      const elapsedHours = Math.floor(Math.random() * 3) + 1
+      const endHour = startHour + elapsedHours
+      return this.createProblem(
+        `It's ${startHour}:00. In ${elapsedHours} hour(s), what time will it be?`,
+        `${endHour}:00`,
+        'Elapsed Time',
+        grade,
+        true,
+        [`${endHour}:00`, `${endHour - 1}:00`, `${endHour + 1}:00`, `${startHour}:${elapsedHours}0`]
+      )
+
+    } else if (questionType === 2) {
+      // Minutes in an hour
+      return this.createProblem(
+        'How many minutes are in 1 hour?',
+        60,
+        'Time Facts',
+        grade,
+        true,
+        [60, 30, 100, 45]
+      )
+
+    } else {
+      // Half past / quarter past
+      const hours = Math.floor(Math.random() * 11) + 1
+      const phrases = [
+        { phrase: 'half past', minutes: 30 },
+        { phrase: 'quarter past', minutes: 15 },
+        { phrase: 'quarter to', minutes: 45 }
+      ]
+      const chosen = phrases[Math.floor(Math.random() * phrases.length)]
+      const displayHour = chosen.phrase === 'quarter to' ? (hours % 12) + 1 : hours
+      const correctTime = `${hours}:${chosen.minutes.toString().padStart(2, '0')}`
+      return this.createProblem(
+        `What time is "${chosen.phrase} ${displayHour}"?`,
+        correctTime,
+        'Telling Time',
+        grade,
+        true,
+        [correctTime, `${hours}:00`, `${hours}:15`, `${hours}:45`]
+      )
+    }
   }
 
   // Grade 4
@@ -572,7 +638,15 @@ export class ProblemGenerator {
       const denom = [2, 3, 4, 5, 6][Math.floor(Math.random() * 5)]
       const n1 = Math.floor(Math.random() * (denom - 1)) + 1
       const n2 = Math.floor(Math.random() * (denom - n1)) + 1
-      return this.createProblem(`${n1}/${denom} + ${n2}/${denom} = ?`, `${n1 + n2}/${denom}`, 'Adding Fractions', grade)
+      const answer = `${n1 + n2}/${denom}`
+      return this.createProblem(
+        `${n1}/${denom} + ${n2}/${denom} = ?`,
+        answer,
+        'Adding Fractions',
+        grade,
+        true,
+        [answer, `${n1 + n2 + 1}/${denom}`, `${n1 + n2}/${denom * 2}`, `${n1}/${denom}`]
+      )
 
     } else if (problemType === 2) {
       // Comparing fractions
@@ -600,13 +674,29 @@ export class ProblemGenerator {
       const denom = [4, 5, 6, 8][Math.floor(Math.random() * 4)]
       const n1 = Math.floor(Math.random() * 3) + Math.floor(denom / 2)
       const n2 = Math.floor(Math.random() * Math.floor(denom / 2)) + 1
-      return this.createProblem(`${n1}/${denom} - ${n2}/${denom} = ?`, `${n1 - n2}/${denom}`, 'Subtracting Fractions', grade)
+      const answer = `${n1 - n2}/${denom}`
+      return this.createProblem(
+        `${n1}/${denom} - ${n2}/${denom} = ?`,
+        answer,
+        'Subtracting Fractions',
+        grade,
+        true,
+        [answer, `${n1 - n2 + 1}/${denom}`, `${n1 + n2}/${denom}`, `${n1}/${denom}`]
+      )
 
     } else {
       // Word problem
       const pizza = Math.floor(Math.random() * 6) + 2
       const ate = Math.floor(Math.random() * (pizza - 1)) + 1
-      return this.createProblem(`A pizza is cut into ${pizza} slices. You eat ${ate} slices. What fraction did you eat?`, `${ate}/${pizza}`, 'Fraction Word Problem', grade)
+      const answer = `${ate}/${pizza}`
+      return this.createProblem(
+        `A pizza is cut into ${pizza} slices. You eat ${ate} slices. What fraction did you eat?`,
+        answer,
+        'Fraction Word Problem',
+        grade,
+        true,
+        [answer, `${ate + 1}/${pizza}`, `${pizza}/${ate}`, `${pizza - ate}/${pizza}`]
+      )
     }
   }
 
@@ -687,7 +777,15 @@ export class ProblemGenerator {
     const n = Math.floor(Math.random() * 5) + 1
     const d = Math.floor(Math.random() * 4) + 2
     const w = Math.floor(Math.random() * 5) + 2
-    return this.createProblem(`${n}/${d} × ${w} = ?`, `${n * w}/${d}`, 'Multiplying Fractions', grade)
+    const answer = `${n * w}/${d}`
+    return this.createProblem(
+      `${n}/${d} × ${w} = ?`,
+      answer,
+      'Multiplying Fractions',
+      grade,
+      true,
+      [answer, `${n * w + 1}/${d}`, `${n}/${d * w}`, `${n + w}/${d}`]
+    )
   }
 
   genAreaVolume(grade) {
@@ -725,7 +823,15 @@ export class ProblemGenerator {
   genFractionOperations(grade) {
     const n1 = Math.floor(Math.random() * 3) + 1
     const n2 = Math.floor(Math.random() * 3) + 1
-    return this.createProblem(`${n1}/2 × ${n2}/3 = ?`, `${n1 * n2}/6`, 'Fraction Operations', grade)
+    const answer = `${n1 * n2}/6`
+    return this.createProblem(
+      `${n1}/2 × ${n2}/3 = ?`,
+      answer,
+      'Fraction Operations',
+      grade,
+      true,
+      [answer, `${n1 + n2}/5`, `${n1 * n2}/5`, `${n1}/6`]
+    )
   }
 
   genTwoSidedEquations(grade) {
@@ -763,7 +869,15 @@ export class ProblemGenerator {
   genPolynomialsIntro(grade) {
     const a = Math.floor(Math.random() * 5) + 1
     const b = Math.floor(Math.random() * 5) + 1
-    return this.createProblem(`Simplify: ${a}x + ${b}x = ?`, `${a + b}x`, 'Polynomials', grade)
+    const answer = `${a + b}x`
+    return this.createProblem(
+      `Simplify: ${a}x + ${b}x = ?`,
+      answer,
+      'Polynomials',
+      grade,
+      true,
+      [answer, `${a * b}x`, `${a + b}x²`, `${a}x + ${b}`]
+    )
   }
 
   genLinearEquations(grade) {
@@ -1000,7 +1114,15 @@ export class ProblemGenerator {
   genFactoringPolynomials(grade) {
     const a = Math.floor(Math.random() * 5) + 1
     const b = Math.floor(Math.random() * 5) + 1
-    return this.createProblem(`Factor x² + ${a + b}x + ${a * b}. The factors are (x+?)(x+?)`, `${a}, ${b}`, 'Factoring Polynomials', grade)
+    const answer = `${a}, ${b}`
+    return this.createProblem(
+      `Factor x² + ${a + b}x + ${a * b}. The factors are (x+?)(x+?)`,
+      answer,
+      'Factoring Polynomials',
+      grade,
+      true,
+      [answer, `${a + 1}, ${b}`, `${a}, ${b + 1}`, `${a * b}, 1`]
+    )
   }
 
   genLinearRelations(grade) {
@@ -1041,7 +1163,14 @@ export class ProblemGenerator {
 
   genRationalExpressions(grade) {
     const a = Math.floor(Math.random() * 5) + 2
-    return this.createProblem(`Simplify: ${a}x/${a} = ?`, 'x', 'Rational Expressions', grade)
+    return this.createProblem(
+      `Simplify: ${a}x/${a} = ?`,
+      'x',
+      'Rational Expressions',
+      grade,
+      true,
+      ['x', `${a}x`, '1', `x/${a}`]
+    )
   }
 
   genQuadraticEquations(grade) {
@@ -1077,7 +1206,15 @@ export class ProblemGenerator {
   genFunctionTransformations(grade) {
     const h = Math.floor(Math.random() * 5) + 1
     const k = Math.floor(Math.random() * 5) + 1
-    return this.createProblem(`f(x) = x². Vertex of f(x-${h}) + ${k}?`, `(${h}, ${k})`, 'Function Transformations', grade)
+    const answer = `(${h}, ${k})`
+    return this.createProblem(
+      `f(x) = x². Vertex of f(x-${h}) + ${k}?`,
+      answer,
+      'Function Transformations',
+      grade,
+      true,
+      [answer, `(${-h}, ${k})`, `(${h}, ${-k})`, `(0, ${k})`]
+    )
   }
 
   genExponentialFunctions(grade) {

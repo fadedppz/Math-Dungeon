@@ -155,6 +155,11 @@ export class BattleManager {
     // A list of messages about what happened during the battle
     // Like: ["Battle started!", "You dealt 10 damage!", etc.]
     this.battleMessageHistory = []
+
+    // ──────────────────────────────────────────────────────────────
+    // 🔄 Question tracking (prevents repetition!)
+    // ──────────────────────────────────────────────────────────────
+    this.askedQuestions = new Set()
   }
 
 
@@ -265,6 +270,37 @@ export class BattleManager {
     console.log('Math unit:', this.unit)
 
     // ──────────────────────────────────────────────────────────────
+    // 🔄 ANTI-REPETITION: Try up to 5 times to get a unique question
+    // ──────────────────────────────────────────────────────────────
+    const maxAttempts = 5
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      this._generateOneProblem()
+
+      // Create a signature for this question
+      const questionSignature = this.currentMathProblem?.question || ''
+
+      // If we haven't asked this before (or we've exhausted attempts), use it!
+      if (!this.askedQuestions.has(questionSignature) || attempt === maxAttempts - 1) {
+        this.askedQuestions.add(questionSignature)
+
+        // Reset tracking after 20 questions to allow variety again
+        if (this.askedQuestions.size > 20) {
+          this.askedQuestions.clear()
+          this.askedQuestions.add(questionSignature)
+        }
+
+        console.log('Created problem:', this.currentMathProblem)
+        return
+      }
+
+      console.log('Question was repeated, trying again...')
+    }
+  }
+
+  // Helper function to generate one problem
+  _generateOneProblem() {
+    // ──────────────────────────────────────────────────────────────
     // Check if we have enough info to make a good problem
     // ──────────────────────────────────────────────────────────────
 
@@ -307,8 +343,6 @@ export class BattleManager {
       // Create a problem for that topic
       this.currentMathProblem = this.mathProblemMaker.generateProblem(this.grade, randomTopic)
     }
-
-    console.log('Created problem:', this.currentMathProblem)
   }
 
 
@@ -363,7 +397,7 @@ export class BattleManager {
     const enemyDefense = this.enemy.stats.defense
 
     let damageToEnemy = AttackSystem.calculateDamage(
-      { attack: heroAttackPower },
+      this.hero.stats,
       { defense: enemyDefense },
       isAnswerCorrect
     )
