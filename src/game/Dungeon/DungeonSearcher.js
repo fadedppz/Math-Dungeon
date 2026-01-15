@@ -8,61 +8,75 @@
  */
 
 /**
- * Binary Search Algorithm
- * Finds a specific grade in a sorted array of grades
+ * Binary Search Algorithm (Recursive)
+ * Finds a specific grade in a sorted array of grades using recursion
  * Time Complexity: O(log n)
+ * Space Complexity: O(log n) - due to recursive call stack
  * 
  * @param {Array} sortedGrades - Sorted array of grade objects
  * @param {number} targetGrade - Grade number to find
+ * @param {number} left - Left boundary index (default: 0)
+ * @param {number} right - Right boundary index (default: array length - 1)
  * @returns {Object|null} Found grade object or null
  */
-export function binarySearchGrade(sortedGrades, targetGrade) {
-  let left = 0
-  let right = sortedGrades.length - 1
-
-  while (left <= right) {
-    const mid = Math.floor((left + right) / 2)
-    const midGrade = sortedGrades[mid]
-
-    if (midGrade.grade === targetGrade) {
-      return midGrade
-    } else if (midGrade.grade < targetGrade) {
-      left = mid + 1
-    } else {
-      right = mid - 1
-    }
+export function binarySearchGrade(sortedGrades, targetGrade, left = 0, right = sortedGrades.length - 1) {
+  // Base case: search space exhausted
+  if (left > right) {
+    return null
   }
 
-  return null // Grade not found
+  const mid = Math.floor((left + right) / 2)
+  const midGrade = sortedGrades[mid]
+
+  // Found the target
+  if (midGrade.grade === targetGrade) {
+    return midGrade
+  }
+
+  // Recursive cases: search in appropriate half
+  if (midGrade.grade < targetGrade) {
+    // Target is in right half - recurse right
+    return binarySearchGrade(sortedGrades, targetGrade, mid + 1, right)
+  } else {
+    // Target is in left half - recurse left
+    return binarySearchGrade(sortedGrades, targetGrade, left, mid - 1)
+  }
 }
 
 /**
- * Binary Search for Units within a Grade
- * Finds a specific unit in a sorted array of units
+ * Binary Search for Units within a Grade (Recursive)
+ * Finds a specific unit in a sorted array of units using recursion
  * Time Complexity: O(log n)
+ * Space Complexity: O(log n) - due to recursive call stack
  * 
  * @param {Array} sortedUnits - Sorted array of unit objects
  * @param {string} targetUnitName - Unit name to find
+ * @param {number} left - Left boundary index (default: 0)
+ * @param {number} right - Right boundary index (default: array length - 1)
  * @returns {Object|null} Found unit object or null
  */
-export function binarySearchUnit(sortedUnits, targetUnitName) {
-  let left = 0
-  let right = sortedUnits.length - 1
-
-  while (left <= right) {
-    const mid = Math.floor((left + right) / 2)
-    const midUnit = sortedUnits[mid]
-
-    if (midUnit.name === targetUnitName) {
-      return midUnit
-    } else if (midUnit.name < targetUnitName) {
-      left = mid + 1
-    } else {
-      right = mid - 1
-    }
+export function binarySearchUnit(sortedUnits, targetUnitName, left = 0, right = sortedUnits.length - 1) {
+  // Base case: search space exhausted
+  if (left > right) {
+    return null
   }
 
-  return null // Unit not found
+  const mid = Math.floor((left + right) / 2)
+  const midUnit = sortedUnits[mid]
+
+  // Found the target
+  if (midUnit.name === targetUnitName) {
+    return midUnit
+  }
+
+  // Recursive cases: search in appropriate half
+  if (midUnit.name < targetUnitName) {
+    // Target is in right half - recurse right
+    return binarySearchUnit(sortedUnits, targetUnitName, mid + 1, right)
+  } else {
+    // Target is in left half - recurse left
+    return binarySearchUnit(sortedUnits, targetUnitName, left, mid - 1)
+  }
 }
 
 /**
@@ -76,14 +90,14 @@ export function binarySearchUnit(sortedUnits, targetUnitName) {
  */
 export function linearSearchProblems(problems, topic) {
   const results = []
-  
+
   for (let i = 0; i < problems.length; i++) {
-    if (problems[i].topic === topic || 
-        problems[i].topics?.includes(topic)) {
+    if (problems[i].topic === topic ||
+      problems[i].topics?.includes(topic)) {
       results.push(problems[i])
     }
   }
-  
+
   return results
 }
 
@@ -98,7 +112,7 @@ export function linearSearchProblems(problems, topic) {
  */
 export function linearSearchAvailableDungeons(dungeons, playerLevel) {
   const available = []
-  
+
   for (let i = 0; i < dungeons.length; i++) {
     const dungeon = dungeons[i]
     // Player can access dungeons at their level or below
@@ -106,7 +120,7 @@ export function linearSearchAvailableDungeons(dungeons, playerLevel) {
       available.push(dungeon)
     }
   }
-  
+
   return available
 }
 
@@ -122,14 +136,14 @@ export function linearSearchAvailableDungeons(dungeons, playerLevel) {
  */
 export function linearSearchByDifficulty(problems, minDifficulty, maxDifficulty) {
   const results = []
-  
+
   for (let i = 0; i < problems.length; i++) {
     const difficulty = problems[i].difficulty || 1
     if (difficulty >= minDifficulty && difficulty <= maxDifficulty) {
       results.push(problems[i])
     }
   }
-  
+
   return results
 }
 
@@ -162,7 +176,7 @@ export class DungeonSearcher {
   findUnit(gradeNumber, unitName) {
     const grade = this.findGrade(gradeNumber)
     if (!grade || !grade.units) return null
-    
+
     const sortedUnits = [...grade.units].sort((a, b) => a.name.localeCompare(b.name))
     return binarySearchUnit(sortedUnits, unitName)
   }
@@ -176,7 +190,7 @@ export class DungeonSearcher {
   findProblemsByTopic(gradeNumber, topic) {
     const grade = this.findGrade(gradeNumber)
     if (!grade || !grade.problems) return []
-    
+
     return linearSearchProblems(grade.problems, topic)
   }
 
@@ -192,7 +206,7 @@ export class DungeonSearcher {
       minLevel: grade.minLevel || grade.grade,
       units: grade.units || []
     }))
-    
+
     return linearSearchAvailableDungeons(dungeons, playerLevel)
   }
 
@@ -206,7 +220,7 @@ export class DungeonSearcher {
   findProblemsByDifficulty(gradeNumber, minDifficulty, maxDifficulty) {
     const grade = this.findGrade(gradeNumber)
     if (!grade || !grade.problems) return []
-    
+
     return linearSearchByDifficulty(grade.problems, minDifficulty, maxDifficulty)
   }
 }

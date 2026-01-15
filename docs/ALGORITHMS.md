@@ -1,51 +1,66 @@
 # Algorithm Explanations
 
-This document explains the iterative algorithms implemented in Math Dungeon Adventure.
+This document explains the algorithms implemented in Math Dungeon Adventure, including both recursive and iterative approaches.
 
 ## Searching Algorithms
 
-### Binary Search
+### Binary Search (Recursive)
 
 **Location**: `src/game/Dungeon/DungeonSearcher.js`
 
 **Purpose**: Efficiently find specific grades and units in sorted curriculum data.
 
 **Algorithm Description**:
-Binary search works by repeatedly dividing the search space in half. It compares the target value with the middle element of the array:
-- If they match, the search is complete
-- If the target is less than the middle element, search the left half
-- If the target is greater than the middle element, search the right half
-- Repeat until found or search space is exhausted
+Binary search is a classic divide-and-conquer algorithm that works by repeatedly dividing the search space in half. Our implementation uses recursion to express this naturally:
+
+1. **Base Case**: If the search bounds cross (`left > right`), the element is not found; return `null`
+2. **Recursive Case**: Calculate the middle index and compare with the target:
+   - If they match, return the found element
+   - If target is greater, recursively search the right half
+   - If target is smaller, recursively search the left half
+
+The recursive approach mirrors the mathematical definition of binary search and makes the divide-and-conquer strategy explicit in the code structure.
 
 **Time Complexity**: O(log n)
 - Best case: O(1) - target is the middle element
 - Average case: O(log n)
 - Worst case: O(log n)
 
-**Space Complexity**: O(1) - iterative implementation uses constant space
+**Space Complexity**: O(log n) - recursive call stack depth
+
+The recursive implementation uses O(log n) space for the call stack, as each recursive call adds a frame. For typical curriculum data sizes (K-12 grades), this is at most 4 stack frames, which is negligible.
 
 **Implementation**:
 ```javascript
-function binarySearchGrade(sortedGrades, targetGrade) {
-  let left = 0
-  let right = sortedGrades.length - 1
-
-  while (left <= right) {
-    const mid = Math.floor((left + right) / 2)
-    const midGrade = sortedGrades[mid]
-
-    if (midGrade.grade === targetGrade) {
-      return midGrade
-    } else if (midGrade.grade < targetGrade) {
-      left = mid + 1
-    } else {
-      right = mid - 1
-    }
+function binarySearchGrade(sortedGrades, targetGrade, left = 0, right = sortedGrades.length - 1) {
+  // Base case: search space exhausted
+  if (left > right) {
+    return null
   }
 
-  return null // Not found
+  const mid = Math.floor((left + right) / 2)
+  const midGrade = sortedGrades[mid]
+
+  // Found the target
+  if (midGrade.grade === targetGrade) {
+    return midGrade
+  }
+  
+  // Recursive cases: search in appropriate half
+  if (midGrade.grade < targetGrade) {
+    return binarySearchGrade(sortedGrades, targetGrade, mid + 1, right)
+  } else {
+    return binarySearchGrade(sortedGrades, targetGrade, left, mid - 1)
+  }
 }
 ```
+
+**Why Recursive?**
+The recursive implementation:
+1. Clearly expresses the divide-and-conquer nature of binary search
+2. Makes the algorithm's structure self-documenting
+3. Naturally handles the shrinking search space through parameters
+4. Demonstrates recursion as an educational concept for students
 
 **Use Cases in Game**:
 - Finding a specific grade when player navigates to a dungeon entrance
