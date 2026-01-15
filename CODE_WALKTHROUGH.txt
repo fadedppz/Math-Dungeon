@@ -1,0 +1,1565 @@
+================================================================================
+                    MATH DUNGEON: COMPLETE CODE WALKTHROUGH
+================================================================================
+
+Written for: Project Presentation / Code Review
+Purpose: To explain every piece of code so that someone who has never seen it
+         before can understand and explain it based on this document alone.
+
+================================================================================
+                            TABLE OF CONTENTS
+================================================================================
+
+PART 1: PROJECT OVERVIEW
+PART 2: FILE STRUCTURE EXPLAINED
+PART 3: APPLICATION ENTRY POINTS (main.jsx, App.jsx)
+PART 4: CORE GAME LOGIC (BUNDLED)
+    4.1 GameEngine.js - The Central Hub
+    4.2 BattleManager.js - The Battle Controller (CRITICAL FILE)
+    4.3 TurnSystem.js + AttackSystem.js - Combat Mechanics
+    4.4 CharacterStats.js + Hero.js + Enemy.js - Character System
+PART 5: MATH GENERATION ENGINE
+    5.1 ProblemGenerator.js - The Brain (CRITICAL FILE)
+    5.2 AnswerValidator.js - Checking Answers
+PART 6: USER INTERFACE (React Components)
+    6.1 MainMenu.jsx - Start Screen
+    6.2 GameHUD.jsx - Map/Exploration View
+    6.3 DungeonSelection.jsx - Level Select
+    6.4 BattleUI.jsx - Combat Screen (CRITICAL FILE)
+PART 7: DATA FLOW DIAGRAM
+PART 8: KEY ALGORITHMS EXPLAINED
+PART 9: PLAYER/HERO ASSET GENERATOR (NEW)
+
+================================================================================
+                        PART 1: PROJECT OVERVIEW
+================================================================================
+
+**What is Math Dungeon?**
+
+Math Dungeon is an educational web-based game where players fight monsters by
+answering math questions. It is:
+
+- Built with **React** (a JavaScript library for building user interfaces)
+- Bundled with **Vite** (a fast build tool for web projects)
+- Aligned with the **Alberta K-12 Mathematics Curriculum** (Grades 1-12)
+
+**Core Gameplay Loop:**
+
+1. Player starts on the Main Menu.
+2. Player clicks "Start Adventure" and enters the Map (exploration mode).
+3. Player walks to a dungeon entrance (e.g., "Grade 5 Dungeon").
+4. Player selects a Unit (e.g., "Fractions") and a Difficulty (Easy/Hard).
+5. A Battle begins. An enemy appears.
+6. A math problem is displayed (e.g., "1/2 + 1/4 = ?").
+7. Player types/clicks the answer.
+8. If correct: Player deals full damage to the enemy.
+9. If wrong: Player deals reduced damage.
+10. The enemy attacks back.
+11. This repeats until someone wins.
+12. Player earns EXP and Gold, and can buy better weapons.
+
+================================================================================
+                        PART 2: FILE STRUCTURE EXPLAINED
+================================================================================
+
+The project root contains:
+
+Math-Dungeon-main/
+├── index.html          # The single HTML page (entry point for browser)
+├── package.json        # Project dependencies (React, Vite)
+├── vite.config.js      # Vite configuration
+├── src/                # ALL SOURCE CODE LIVES HERE
+│   ├── main.jsx        # Application bootstrap
+│   ├── App.jsx         # Root React component (manages screens)
+│   ├── components/     # React UI components
+│   │   ├── MainMenu.jsx
+│   │   ├── GameHUD.jsx
+│   │   ├── DungeonSelection.jsx
+│   │   ├── BattleUI.jsx        <-- CRITICAL: The combat screen
+│   │   ├── ProblemDisplay.jsx
+│   │   ├── VisualizationPanel.jsx
+│   │   └── ...
+│   ├── game/           # Core game logic (NO React code here)
+│   │   ├── GameEngine.js       <-- Central object
+│   │   ├── Battle/
+│   │   │   ├── BattleManager.js <-- CRITICAL: Manages combat
+│   │   │   ├── TurnSystem.js
+│   │   │   └── AttackSystem.js
+│   │   ├── Characters/
+│   │   │   ├── Hero.js
+│   │   │   ├── Enemy.js
+│   │   │   └── CharacterStats.js
+│   │   ├── Math/
+│   │   │   ├── ProblemGenerator.js <-- CRITICAL: Math question factory
+│   │   │   └── AnswerValidator.js
+│   │   ├── Dungeon/
+│   │   │   ├── DungeonManager.js
+│   │   │   └── ...
+│   │   └── Map/
+│   │       └── MapManager.js
+│   ├── data/
+│   │   └── curriculum/
+│   │       └── alberta_curriculum.json  <-- Curriculum data
+│   ├── styles/
+│   │   └── App.css
+│   └── utils/
+│       └── audioManager.js
+
+================================================================================
+                PART 3: APPLICATION ENTRY POINTS
+================================================================================
+
+-------------------------------------------------------------------------------
+FILE: src/main.jsx
+-------------------------------------------------------------------------------
+
+PURPOSE: This is the very first JavaScript file that runs when the browser
+         loads the application. It "mounts" the React app to the HTML page.
+
+CODE:
+```javascript
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './styles/App.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)
+```
+
+EXPLANATION:
+- Line 1-4: Import React, ReactDOM, the App component, and global CSS.
+- Line 6: Find the HTML element with id="root" (in index.html).
+- Line 7-9: Render the <App /> component inside that element.
+- <React.StrictMode> is a helper that warns about potential problems in dev.
+
+-------------------------------------------------------------------------------
+FILE: src/App.jsx
+-------------------------------------------------------------------------------
+
+PURPOSE: This is the "router" of the application. It decides which screen to
+         show based on the current game state.
+
+CODE:
+```javascript
+import { useState, useEffect } from 'react'
+import MainMenu from './components/MainMenu'
+import GameHUD from './components/GameHUD'
+import BattleUI from './components/BattleUI'
+import DungeonSelection from './components/DungeonSelection'
+import { GameEngine } from './game/GameEngine'
+import { getAudioManager } from './utils/audioManager'
+
+function App() {
+  // gameState can be: 'menu', 'map', 'battle', 'dungeon-selection'
+  const [gameState, setGameState] = useState('menu')
+  const [gameEngine, setGameEngine] = useState(null)
+  const [selectedGrade, setSelectedGrade] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Initial loading effect
+  useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(false)
+    }, 1500)
+  }, [])
+
+  const startGame = () => {
+    const engine = new GameEngine()
+    setGameEngine(engine)
+    setGameState('map')
+    getAudioManager().resume()
+  }
+
+  const enterDungeon = (grade) => {
+    setSelectedGrade(grade)
+    if (gameEngine) {
+      gameEngine.selectedGrade = grade
+    }
+    setGameState('dungeon-selection')
+  }
+
+  const startBattle = () => {
+    setGameState('battle')
+  }
+
+  const returnToMap = () => {
+    setGameState('map')
+  }
+
+  const returnToMenu = () => {
+    setGameState('menu')
+    setGameEngine(null)
+  }
+
+  // ... loading screen JSX omitted for brevity ...
+
+  return (
+    <div className="app">
+      {gameState === 'menu' && (
+        <MainMenu onStart={startGame} />
+      )}
+      
+      {gameState === 'map' && gameEngine && (
+        <GameHUD 
+          gameEngine={gameEngine}
+          onEnterDungeon={enterDungeon}
+          onReturnToMenu={returnToMenu}
+        />
+      )}
+      
+      {gameState === 'battle' && gameEngine && (
+        <BattleUI 
+          gameEngine={gameEngine}
+          onReturnToMap={returnToMap}
+        />
+      )}
+      
+      {gameState === 'dungeon-selection' && gameEngine && (
+        <DungeonSelection 
+          gameEngine={gameEngine}
+          initialGrade={selectedGrade}
+          onStartBattle={startBattle}
+          onReturnToMap={returnToMap}
+        />
+      )}
+    </div>
+  )
+}
+
+export default App
+```
+
+KEY CONCEPTS:
+1. **useState** is a React Hook for storing data that can change.
+   - `gameState` stores which screen is active ('menu', 'map', etc.)
+   - When you call `setGameState('battle')`, React re-renders with the new UI.
+
+2. **useEffect** runs code when the component mounts (first loads).
+
+3. **Conditional Rendering**: `{gameState === 'menu' && <MainMenu />}` means
+   "only show <MainMenu> if gameState is 'menu'".
+
+4. **Props**: `onStart={startGame}` passes the `startGame` function to
+   `<MainMenu>` so it can call it when the user clicks "Start Adventure".
+
+================================================================================
+                        PART 4: CORE GAME LOGIC
+================================================================================
+
+-------------------------------------------------------------------------------
+4.1 FILE: src/game/GameEngine.js
+-------------------------------------------------------------------------------
+
+PURPOSE: The central "brain" that holds references to all managers.
+
+CODE:
+```javascript
+export class GameEngine {
+  constructor() {
+    this.currentScene = 'lobby'
+    this.player = null
+    this.mapManager = null
+    this.battleManager = null
+    this.dungeonManager = null
+    this.progressTracker = null
+    
+    this.initialize()
+  }
+
+  initialize() {
+    console.log('Game Engine initialized')
+  }
+
+  update(deltaTime) {
+    if (this.mapManager && this.currentScene === 'map') {
+      this.mapManager.update(deltaTime)
+    }
+    if (this.battleManager && this.currentScene === 'battle') {
+      this.battleManager.update(deltaTime)
+    }
+  }
+
+  setScene(scene) {
+    this.currentScene = scene
+  }
+}
+```
+
+EXPLANATION:
+- This is a lightweight controller. It doesn't do much itself.
+- The `update(deltaTime)` function is called every frame to update animations.
+- The actual logic lives in the managers (BattleManager, MapManager, etc.)
+
+-------------------------------------------------------------------------------
+4.2 FILE: src/game/Battle/BattleManager.js (CRITICAL)
+-------------------------------------------------------------------------------
+
+PURPOSE: This file controls EVERYTHING that happens during a battle. It is the
+         most important file in the game logic.
+
+WHAT IT DOES:
+- Creates an enemy based on grade and difficulty.
+- Generates math problems using ProblemGenerator.
+- Checks if the player's answer is correct.
+- Calculates damage (correct = full damage, wrong = reduced damage).
+- Handles turn order (player -> enemy -> player -> ...).
+- Determines victory or defeat.
+- Awards EXP and Gold.
+
+CODE (with detailed comments):
+```javascript
+// ═══════════════════════════════════════════════════════════════
+// IMPORTS
+// ═══════════════════════════════════════════════════════════════
+import { TurnSystem } from './TurnSystem'
+import { AttackSystem } from './AttackSystem'
+import { Enemy } from '../Characters/Enemy'
+import { ProblemGenerator } from '../Math/ProblemGenerator'
+
+// ═══════════════════════════════════════════════════════════════
+// DIFFICULTY SETTINGS
+// ═══════════════════════════════════════════════════════════════
+// These multipliers change how hard the game is.
+// bossHealthMultiplier: How much HP the boss has (1.0 = normal, 2.0 = double)
+// bossAttackMultiplier: How hard the boss hits
+// playerDamageMultiplier: How much damage the player does
+// experienceMultiplier: How much EXP you get for winning
+// wrongAnswerPenalty: Damage multiplier when you answer wrong
+
+const GAME_DIFFICULTY_SETTINGS = {
+  easy: {
+    bossHealthMultiplier: 0.6,      // Boss has 60% health
+    bossAttackMultiplier: 0.5,      // Boss does 50% damage
+    playerDamageMultiplier: 1.5,    // Player does 150% damage
+    experienceMultiplier: 0.8,      // Get 80% EXP
+    wrongAnswerPenalty: 0.3         // Wrong answers still do 30% damage
+  },
+  medium: {
+    bossHealthMultiplier: 1.0,
+    bossAttackMultiplier: 1.0,
+    playerDamageMultiplier: 1.0,
+    experienceMultiplier: 1.2,
+    wrongAnswerPenalty: 0.5
+  },
+  hard: {
+    bossHealthMultiplier: 1.5,
+    bossAttackMultiplier: 1.3,
+    playerDamageMultiplier: 0.8,
+    experienceMultiplier: 2.5,      // 250% EXP reward!
+    wrongAnswerPenalty: 0.3
+  },
+  nightmare: {
+    bossHealthMultiplier: 2.0,
+    bossAttackMultiplier: 1.8,
+    playerDamageMultiplier: 0.6,
+    experienceMultiplier: 5.0,      // 500% EXP reward!
+    wrongAnswerPenalty: 0.2
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// THE BATTLE MANAGER CLASS
+// ═══════════════════════════════════════════════════════════════
+export class BattleManager {
+
+  constructor(theHero, mathGradeLevel, mathUnit, difficultyLevel = 'medium') {
+    // Save the hero (player character)
+    this.hero = theHero
+
+    // Save math settings
+    this.grade = mathGradeLevel          // What grade level (1-12)
+    this.unit = mathUnit                 // What topic (addition, fractions)
+
+    // Load difficulty settings
+    this.difficulty = difficultyLevel
+    this.difficultySettings = GAME_DIFFICULTY_SETTINGS[difficultyLevel] 
+                              || GAME_DIFFICULTY_SETTINGS.medium
+
+    // Enemy - will be created in startBattle()
+    this.enemy = null
+
+    // Create helper tools
+    this.turnSystem = new TurnSystem()
+    this.mathProblemMaker = new ProblemGenerator()
+
+    // Battle tracking
+    this.currentMathProblem = null
+    this.battleState = 'waiting'  // 'player-turn', 'enemy-turn', 'victory', 'defeat'
+    this.battleMessageHistory = []
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // startBattle() - Initialize the battle
+  // ═══════════════════════════════════════════════════════════════
+  startBattle() {
+    // STEP 1: Calculate enemy difficulty
+    const startingDifficulty = this.unit?.difficulty || Math.min(5, Math.ceil(this.grade / 2)) || 1
+    let enemyDifficultyLevel = startingDifficulty
+
+    if (this.difficulty === 'hard') {
+      enemyDifficultyLevel = Math.min(5, startingDifficulty + 1)
+    }
+    if (this.difficulty === 'nightmare') {
+      enemyDifficultyLevel = Math.min(5, startingDifficulty + 2)
+    }
+
+    // STEP 2: Create the enemy
+    this.enemy = Enemy.createForGrade(this.grade, enemyDifficultyLevel)
+
+    // STEP 3: Apply difficulty multipliers to enemy stats
+    const originalHealth = this.enemy.stats.maxHP
+    const newHealth = Math.floor(originalHealth * this.difficultySettings.bossHealthMultiplier)
+    this.enemy.stats.maxHP = newHealth
+    this.enemy.stats.currentHP = newHealth
+
+    const originalAttack = this.enemy.stats.attack
+    const newAttack = Math.floor(originalAttack * this.difficultySettings.bossAttackMultiplier)
+    this.enemy.stats.attack = newAttack
+
+    // STEP 4: Set up turn system
+    this.turnSystem.reset()
+    this.battleState = 'player-turn'
+    this.turnSystem.startTurn('player')
+
+    // STEP 5: Create opening message
+    const emoji = { easy: '🌱', medium: '⚔️', hard: '🔥', nightmare: '💀' }[this.difficulty]
+    this.battleMessageHistory = [`${emoji} ${this.difficulty.toUpperCase()} Mode - ${this.enemy.name} appeared!`]
+
+    // STEP 6: Generate first math problem
+    this.createNewMathProblem()
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // createNewMathProblem() - Generate a math question
+  // ═══════════════════════════════════════════════════════════════
+  createNewMathProblem() {
+    // Use the unit name to find a matching problem generator
+    const unitName = this.unit?.name || ''
+    this.currentMathProblem = this.mathProblemMaker.generateProblemByUnit(this.grade, unitName)
+
+    // If that didn't work, pick a random topic from the unit
+    if (!this.currentMathProblem?.question) {
+      const topics = this.unit?.topics || ['addition']
+      const randomTopic = topics[Math.floor(Math.random() * topics.length)]
+      this.currentMathProblem = this.mathProblemMaker.generateProblem(this.grade, randomTopic)
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // submitAnswer(playerAnswer) - THE MAIN INTERACTION
+  // ═══════════════════════════════════════════════════════════════
+  // This is called when the player submits their answer.
+  // It is the MOST IMPORTANT function in the entire game.
+  submitAnswer(playerAnswer) {
+    // SAFETY CHECK: Is it the player's turn?
+    if (this.battleState !== 'player-turn') {
+      return { success: false, message: 'Not your turn!' }
+    }
+
+    // Make sure we have a problem
+    if (this.currentMathProblem === null) {
+      this.createNewMathProblem()
+    }
+
+    // STEP 1: Check if the answer is correct
+    const isCorrect = this.mathProblemMaker.validateAnswer(this.currentMathProblem, playerAnswer)
+
+    // STEP 2: Calculate damage
+    const heroAttack = this.hero.stats.attack
+    const enemyDefense = this.enemy.stats.defense
+    let damage = AttackSystem.calculateDamage(
+      { attack: heroAttack },
+      { defense: enemyDefense },
+      isCorrect
+    )
+
+    // Apply difficulty multiplier
+    damage = Math.floor(damage * this.difficultySettings.playerDamageMultiplier)
+
+    // If wrong, reduce damage further
+    if (!isCorrect) {
+      damage = Math.max(1, Math.floor(damage * this.difficultySettings.wrongAnswerPenalty))
+    }
+
+    // STEP 3: Apply damage to enemy
+    const enemyAlive = AttackSystem.applyDamage(this.enemy, damage)
+
+    // STEP 4: Create result message
+    const msg = isCorrect
+      ? `✓ Correct! You dealt ${damage} damage to ${this.enemy.name}!`
+      : `✗ Wrong! You dealt ${damage} damage (reduced).`
+    this.battleMessageHistory.push(msg)
+
+    const result = {
+      success: true,
+      correct: isCorrect,
+      damage: damage,
+      enemyHP: this.enemy.stats.currentHP,
+      enemyMaxHP: this.enemy.stats.maxHP,
+      message: msg
+    }
+
+    // STEP 5: Check for victory
+    if (!enemyAlive) {
+      this.battleState = 'victory'
+
+      // Calculate rewards
+      const baseExp = this.enemy.stats.level * 10
+      const expEarned = Math.floor(baseExp * this.difficultySettings.experienceMultiplier)
+      const leveledUp = this.hero.stats.addExperience(expEarned)
+
+      const baseGold = this.enemy.stats.level * 15
+      const goldEarned = Math.floor(baseGold * this.difficultySettings.experienceMultiplier)
+      this.hero.stats.gold = (this.hero.stats.gold || 0) + goldEarned
+
+      // Save the game
+      if (this.hero.stats.save) {
+        this.hero.stats.save()
+      }
+
+      result.victory = true
+      result.expGained = expEarned
+      result.goldGained = goldEarned
+      result.leveledUp = leveledUp
+
+      this.battleMessageHistory.push(`Victory! Gained ${expEarned} EXP and ${goldEarned} gold!`)
+      if (leveledUp) {
+        this.battleMessageHistory.push(`Level up! Now level ${this.hero.stats.level}!`)
+      }
+    } else {
+      // Enemy survives - switch to enemy turn
+      this.turnSystem.endTurn()
+      this.battleState = 'enemy-turn'
+      setTimeout(() => this.enemyTurn(), 1000)  // Wait 1 second
+    }
+
+    return result
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // enemyTurn() - The enemy attacks back
+  // ═══════════════════════════════════════════════════════════════
+  enemyTurn() {
+    if (this.battleState !== 'enemy-turn') return
+
+    // Calculate boss damage
+    const bossAttack = this.enemy.stats.attack
+    const heroDefense = this.hero.stats.defense
+    const baseDamage = AttackSystem.calculateDamage({ attack: bossAttack }, { defense: heroDefense }, true)
+
+    // Apply level scaling with safety cap (boss can never one-shot)
+    const finalDamage = this.figureOutHowMuchDamageTheBossDoes(
+      baseDamage,
+      this.hero.stats.level,
+      this.hero.stats.maxHP
+    )
+
+    // Apply damage to hero
+    const heroAlive = AttackSystem.applyDamage(this.hero, finalDamage)
+
+    this.battleMessageHistory.push(`${this.enemy.name} attacks! ${finalDamage} damage!`)
+
+    if (!heroAlive) {
+      this.battleState = 'defeat'
+      this.battleMessageHistory.push('Defeat! You were knocked out!')
+    } else {
+      this.turnSystem.endTurn()
+      this.battleState = 'player-turn'
+      this.createNewMathProblem()
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // figureOutHowMuchDamageTheBossDoes() - FAIR PLAY ALGORITHM
+  // ═══════════════════════════════════════════════════════════════
+  // This ensures the boss can NEVER one-shot the player.
+  // Damage is capped at 20% of player's max HP.
+  figureOutHowMuchDamageTheBossDoes(bossNormalDamage, heroLevel, heroMaxHP) {
+    // Level scaling: +5% damage per level above 1
+    const levelsAboveOne = Math.max(0, heroLevel - 1)
+    const damageMultiplier = 1 + (levelsAboveOne * 0.05)
+    const boostedDamage = bossNormalDamage * damageMultiplier
+
+    // SAFETY CAP: Max 20% of hero's HP per hit
+    const maxAllowedDamage = heroMaxHP * 0.20
+
+    // Use the smaller value
+    const finalDamage = Math.max(1, Math.floor(Math.min(boostedDamage, maxAllowedDamage)))
+    return finalDamage
+  }
+
+  // Getter functions
+  getCurrentProblem() { return this.currentMathProblem }
+  getBattleState() { return this.battleState }
+  getBattleLog() { return this.battleMessageHistory }
+  isBattleOver() { return this.battleState === 'victory' || this.battleState === 'defeat' }
+  getHeroStats() { /* ... returns stats object ... */ }
+  getEnemyStats() { /* ... returns stats object ... */ }
+}
+```
+
+-------------------------------------------------------------------------------
+4.3 FILE: src/game/Battle/TurnSystem.js
+-------------------------------------------------------------------------------
+
+PURPOSE: Simple state machine to track whose turn it is.
+
+CODE:
+```javascript
+export class TurnSystem {
+  constructor() {
+    this.currentTurn = 'player'  // 'player' or 'enemy'
+    this.turnCount = 0
+    this.waitingForAnswer = false
+  }
+
+  startTurn(turnOwner) {
+    this.currentTurn = turnOwner
+    this.turnCount++
+    this.waitingForAnswer = false
+  }
+
+  endTurn() {
+    // Switch between player and enemy
+    if (this.currentTurn === 'player') {
+      this.currentTurn = 'enemy'
+    } else {
+      this.currentTurn = 'player'
+    }
+    this.waitingForAnswer = false
+  }
+
+  isPlayerTurn() { return this.currentTurn === 'player' }
+  isEnemyTurn() { return this.currentTurn === 'enemy' }
+  reset() { this.currentTurn = 'player'; this.turnCount = 0 }
+}
+```
+
+-------------------------------------------------------------------------------
+4.4 FILE: src/game/Battle/AttackSystem.js
+-------------------------------------------------------------------------------
+
+PURPOSE: Calculates damage based on attack, defense, and answer correctness.
+
+CODE:
+```javascript
+export class AttackSystem {
+  /**
+   * Calculate damage: attacker vs defender
+   * If the answer was wrong, damage is halved.
+   */
+  static calculateDamage(attacker, defender, correctAnswer = true) {
+    let baseDamage = attacker.attack || 10
+
+    // Add weapon bonus if equipped
+    const weaponBonus = attacker.equippedWeapon?.damageBonus || 0
+    baseDamage = baseDamage + weaponBonus
+
+    // Wrong answer = half damage
+    if (!correctAnswer) {
+      baseDamage = Math.floor(baseDamage * 0.5)
+    }
+
+    // Add randomness (0-5)
+    const variance = Math.floor(Math.random() * 5)
+    const totalDamage = baseDamage + variance
+
+    // Apply defense reduction (defense reduces damage by 50% of its value)
+    const defenseReduction = Math.floor((defender.defense || 0) * 0.5)
+    const finalDamage = Math.max(1, totalDamage - defenseReduction)
+
+    return finalDamage
+  }
+
+  /**
+   * Apply damage to a character. Returns true if still alive.
+   */
+  static applyDamage(character, damage) {
+    if (character.stats) {
+      character.stats.takeDamage(damage)
+      return character.stats.isAlive()
+    }
+    return false
+  }
+}
+```
+
+-------------------------------------------------------------------------------
+4.5 FILE: src/game/Characters/CharacterStats.js
+-------------------------------------------------------------------------------
+
+PURPOSE: A data class that stores a character's HP, attack, defense, level,
+         experience, gold, and equipped weapon. Also handles saving/loading.
+
+CODE:
+```javascript
+export class CharacterStats {
+  constructor(config = {}) {
+    this.maxHP = config.maxHP || 400
+    this.currentHP = this.maxHP
+    this.attack = config.attack || 10
+    this.defense = config.defense || 5
+    this.level = config.level || 1
+    this.experience = config.experience || 0
+    this.experienceToNextLevel = config.experienceToNextLevel || 100
+    this.gold = config.gold || 0
+    this.equippedWeapon = config.equippedWeapon || {
+      name: 'Wooden Sword',
+      damageBonus: 0,
+      description: 'A basic training sword'
+    }
+  }
+
+  takeDamage(damage) {
+    const actualDamage = Math.max(1, Math.floor(damage))
+    this.currentHP = Math.max(0, this.currentHP - actualDamage)
+    return actualDamage
+  }
+
+  heal(amount) {
+    this.currentHP = Math.min(this.maxHP, this.currentHP + amount)
+  }
+
+  addExperience(exp) {
+    this.experience += exp
+    let leveledUp = false
+    while (this.experience >= this.experienceToNextLevel) {
+      this.experience -= this.experienceToNextLevel
+      this.levelUp()
+      leveledUp = true
+    }
+    return leveledUp
+  }
+
+  levelUp() {
+    this.level++
+    const oldMaxHP = this.maxHP
+    this.maxHP = Math.floor(this.maxHP * 1.2)       // +20% HP
+    this.currentHP += (this.maxHP - oldMaxHP)       // Heal the difference
+    this.attack = Math.floor(this.attack * 1.15)    // +15% attack
+    this.defense = Math.floor(this.defense * 1.1)   // +10% defense
+    this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * 1.5)
+  }
+
+  isAlive() { return this.currentHP > 0 }
+  getHPPercentage() { return this.currentHP / this.maxHP }
+
+  // localStorage save/load
+  save() {
+    localStorage.setItem('math_dungeon_save', JSON.stringify(this.toJSON()))
+  }
+  load() {
+    const saved = localStorage.getItem('math_dungeon_save')
+    if (saved) this.fromJSON(JSON.parse(saved))
+  }
+}
+```
+
+-------------------------------------------------------------------------------
+4.6 FILE: src/game/Characters/Hero.js
+-------------------------------------------------------------------------------
+
+PURPOSE: Represents the player's character. Has stats from CharacterStats plus
+         animation/sprite handling.
+
+KEY POINTS:
+- Uses CharacterStats to store HP, attack, etc.
+- Loads saved data on creation: `this.stats.load()`
+- Has animation states: 'idle', 'walk', 'attack', 'hit', 'victory'
+- `triggerAttack()` plays attack animation for 600ms.
+
+-------------------------------------------------------------------------------
+4.7 FILE: src/game/Characters/Enemy.js
+-------------------------------------------------------------------------------
+
+PURPOSE: Represents enemy monsters.
+
+KEY POINTS:
+- Stats are calculated from grade and difficulty:
+  ```javascript
+  const baseHP = 50 + (grade * 10) + (difficulty * 20)
+  const baseAttack = 5 + (grade * 1) + (difficulty * 2)
+  ```
+- Enemy type is determined by grade:
+  - Grade 1-3: Slime
+  - Grade 4-6: Goblin
+  - Grade 7-9: Skeleton
+  - Grade 10+: Dragon
+- `Enemy.createForGrade(grade, difficulty)` is a factory method.
+
+================================================================================
+                    PART 5: MATH GENERATION ENGINE
+================================================================================
+
+-------------------------------------------------------------------------------
+5.1 FILE: src/game/Math/ProblemGenerator.js (CRITICAL)
+-------------------------------------------------------------------------------
+
+PURPOSE: Generates math problems based on grade and topic. This is the
+         "educational brain" of the game.
+
+HOW IT WORKS:
+1. It has a map (`unitGenerators`) that links curriculum unit names to
+   generator functions.
+2. It has a map (`topicGenerators`) that links topic keywords to generators.
+3. When you call `generateProblem(grade, topic)`, it finds the right generator.
+4. Each generator creates a random problem using `Math.random()`.
+
+EXAMPLE GENERATORS:
+
+```javascript
+// Grade 1: Addition & Subtraction to 20
+genAddSubTo20(grade) {
+  const problemType = Math.floor(Math.random() * 4) + 1
+
+  if (problemType === 1) {
+    // Simple Addition: e.g., "5 + 3 = ?"
+    const num1 = Math.floor(Math.random() * 10) + 1
+    const num2 = Math.floor(Math.random() * 10) + 1
+    return this.createProblem(`${num1} + ${num2} = ?`, num1 + num2, 'Addition', grade, true)
+  }
+  // ... other problem types ...
+}
+
+// Grade 3: Multiplication Facts
+genMultiplicationFacts(grade) {
+  const a = Math.floor(Math.random() * 10) + 1
+  const b = Math.floor(Math.random() * 10) + 1
+  return this.createProblem(`${a} × ${b} = ?`, a * b, 'Multiplication Facts', grade, grade <= 4)
+}
+
+// Grade 10: Right Triangle Trigonometry
+genRightTriangleTrig(grade) {
+  const angles = [30, 45, 60]
+  const funcs = ['sin', 'cos', 'tan']
+  const angle = angles[Math.floor(Math.random() * angles.length)]
+  const func = funcs[Math.floor(Math.random() * funcs.length)]
+  const values = {
+    'sin30': 0.5, 'sin45': 0.71, 'sin60': 0.87,
+    'cos30': 0.87, 'cos45': 0.71, 'cos60': 0.5,
+    'tan30': 0.58, 'tan45': 1, 'tan60': 1.73
+  }
+  return this.createProblem(`${func}(${angle}°) = ?`, values[`${func}${angle}`], 'Trigonometry', grade)
+}
+```
+
+PROBLEM OBJECT STRUCTURE:
+```javascript
+{
+  question: "5 + 3 = ?",         // The question text
+  answer: 8,                     // The correct answer
+  topic: "Addition",             // Topic name for display
+  difficulty: 1,                 // Grade level
+  type: "multiple-choice" | "fill-in-blank",
+  options: [                     // For multiple choice
+    { label: "A", value: 8 },
+    { label: "B", value: 6 },
+    { label: "C", value: 10 },
+    { label: "D", value: 7 }
+  ]
+}
+```
+
+MULTIPLE CHOICE DISTRACTOR GENERATION:
+```javascript
+generateMultipleChoiceOptions(correctAnswer, numOptions = 4) {
+  const options = [correctAnswer]
+  const used = new Set([String(correctAnswer)])
+
+  while (options.length < numOptions) {
+    let distractor
+    if (typeof correctAnswer === 'number') {
+      // Generate nearby wrong answers
+      const variance = Math.max(3, Math.abs(correctAnswer) * 0.3)
+      distractor = Math.round(correctAnswer + (Math.random() > 0.5 ? 1 : -1) * (Math.random() * variance + 1))
+    } else {
+      distractor = `Option ${options.length + 1}`
+    }
+    if (!used.has(String(distractor))) {
+      options.push(distractor)
+      used.add(String(distractor))
+    }
+  }
+
+  // Shuffle options
+  for (let i = options.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [options[i], options[j]] = [options[j], options[i]]
+  }
+
+  return options.map((opt, index) => ({
+    label: String.fromCharCode(65 + index),  // A, B, C, D
+    value: opt
+  }))
+}
+```
+
+-------------------------------------------------------------------------------
+5.2 FILE: src/game/Math/AnswerValidator.js
+-------------------------------------------------------------------------------
+
+PURPOSE: Checks if the player's answer matches the correct answer.
+
+KEY FEATURES:
+- Handles numeric comparison with tolerance (0.01) for floating point errors.
+- Handles fraction comparison (e.g., "1/2" vs "0.5").
+- Case-insensitive string comparison for text answers.
+
+CODE:
+```javascript
+export class AnswerValidator {
+  static validate(problem, userAnswer) {
+    if (userAnswer === null || userAnswer === '' || userAnswer === undefined) {
+      return false
+    }
+    return this.compareAnswers(problem.answer, userAnswer)
+  }
+
+  static compareAnswers(correct, user) {
+    const correctNum = this.parseToNumber(correct)
+    const userNum = this.parseToNumber(user)
+
+    // If both are numbers, compare with tolerance
+    if (correctNum !== null && userNum !== null) {
+      const tolerance = 0.01
+      return Math.abs(userNum - correctNum) < tolerance
+    }
+
+    // Otherwise compare as strings (case-insensitive)
+    const correctStr = String(correct).toLowerCase().trim()
+    const userStr = String(user).toLowerCase().trim()
+
+    // Handle fractions
+    if (correctStr.includes('/') || userStr.includes('/')) {
+      return this.compareFractions(correctStr, userStr)
+    }
+
+    return correctStr === userStr
+  }
+
+  static parseToNumber(value) {
+    if (typeof value === 'number') return value
+
+    if (typeof value === 'string') {
+      // Handle fractions like "3/4"
+      if (value.includes('/')) {
+        const [num, denom] = value.split('/')
+        const n = parseFloat(num)
+        const d = parseFloat(denom)
+        if (!isNaN(n) && !isNaN(d) && d !== 0) {
+          return n / d
+        }
+      }
+      const num = parseFloat(value)
+      if (!isNaN(num)) return num
+    }
+    return null
+  }
+}
+```
+
+================================================================================
+                    PART 6: USER INTERFACE (React Components)
+================================================================================
+
+-------------------------------------------------------------------------------
+6.4 FILE: src/components/BattleUI.jsx (CRITICAL)
+-------------------------------------------------------------------------------
+
+PURPOSE: The React component that renders the battle screen.
+
+KEY FEATURES:
+- Displays Hero stats on the left.
+- Displays Enemy stats on the right.
+- Displays the math problem in the center.
+- Handles user input (text field or multiple choice buttons).
+- Triggers animations when damage is dealt.
+- Shows victory/defeat screens.
+
+CODE EXCERPT:
+```javascript
+function BattleUI({ gameEngine, onReturnToMap }) {
+  const [battleManager, setBattleManager] = useState(null)
+  const [currentProblem, setCurrentProblem] = useState(null)
+  const [heroStats, setHeroStats] = useState(null)
+  const [enemyStats, setEnemyStats] = useState(null)
+  const [battleLog, setBattleLog] = useState([])
+  const [battleState, setBattleState] = useState('waiting')
+  const [answer, setAnswer] = useState('')
+
+  // Initialize battle when component mounts
+  useEffect(() => {
+    const grade = gameEngine?.selectedGrade || 1
+    const unit = gameEngine?.selectedUnit || { name: 'Number Sense', topics: ['arithmetic'], difficulty: 1 }
+    const difficulty = gameEngine?.selectedDifficulty || 'medium'
+
+    // Find the hero from the game engine (so EXP/Gold save correctly)
+    let hero = gameEngine?.mapManager?.hero || gameEngine?.hero || new Hero({ x: 0, y: 0 })
+
+    const manager = new BattleManager(hero, grade, unit, difficulty)
+    manager.startBattle()
+
+    setBattleManager(manager)
+    setCurrentProblem(manager.getCurrentProblem())
+    setHeroStats(manager.getHeroStats())
+    setEnemyStats(manager.getEnemyStats())
+    setBattleState(manager.getBattleState())
+    setBattleLog(manager.getBattleLog())
+  }, [gameEngine])
+
+  // Submit answer (called by input field or multiple choice button)
+  const submitAnswer = (submittedAnswer) => {
+    if (!battleManager || battleState !== 'player-turn') return
+    if (submittedAnswer === '' || submittedAnswer === undefined) return
+
+    const result = battleManager.submitAnswer(String(submittedAnswer))
+
+    // Update UI state from battleManager
+    setBattleLog([...battleManager.getBattleLog()])
+    setHeroStats(battleManager.getHeroStats())
+    setEnemyStats(battleManager.getEnemyStats())
+    setBattleState(battleManager.getBattleState())
+    setAnswer('')
+
+    // Handle victory
+    if (result.victory) {
+      setTimeout(() => { onReturnToMap() }, 3000)
+    }
+  }
+
+  // Render UI...
+}
+```
+
+================================================================================
+                        PART 7: DATA FLOW DIAGRAM
+================================================================================
+
+Here is the complete data flow when a player answers a question:
+
+1. USER types "25" into the input box and presses Enter.
+
+2. BattleUI.jsx:
+   - `handleSubmitAnswer()` is called.
+   - Calls `battleManager.submitAnswer("25")`.
+
+3. BattleManager.js:
+   - `submitAnswer("25")` is called.
+   - Calls `mathProblemMaker.validateAnswer(currentProblem, "25")`.
+
+4. AnswerValidator.js:
+   - `validate(problem, "25")` is called.
+   - Parses "25" as number 25.
+   - Compares to `problem.answer` (e.g., 25).
+   - Returns `true` (correct!).
+
+5. Back in BattleManager.js:
+   - Knows answer is correct.
+   - Calls `AttackSystem.calculateDamage(hero, enemy, true)` -> returns 18.
+   - Applies difficulty multiplier: 18 * 1.0 = 18.
+   - Calls `AttackSystem.applyDamage(enemy, 18)`.
+
+6. AttackSystem.js:
+   - Calls `enemy.stats.takeDamage(18)`.
+   - Enemy HP: 100 - 18 = 82.
+   - Returns `true` (enemy still alive).
+
+7. Back in BattleManager.js:
+   - Enemy survived, so switch to 'enemy-turn'.
+   - Schedule `enemyTurn()` in 1 second.
+   - Return result object: { correct: true, damage: 18, ... }
+
+8. Back in BattleUI.jsx:
+   - Receives result.
+   - Updates state: setBattleLog, setEnemyStats, etc.
+   - React re-renders with new HP bar.
+   - Shows "Correct!" popup.
+   - Shakes enemy sprite (animation).
+
+9. After 1 second, BattleManager.js:
+   - `enemyTurn()` is called.
+   - Calculates boss damage.
+   - Calls `AttackSystem.applyDamage(hero, damage)`.
+   - Hero survives -> switch to 'player-turn'.
+   - Generate new problem.
+
+10. BattleUI.jsx:
+    - Checks battleState every 100ms via setInterval.
+    - Detects state changed to 'player-turn'.
+    - Updates UI, shows new problem.
+
+================================================================================
+                    PART 8: KEY ALGORITHMS EXPLAINED
+================================================================================
+
+ALGORITHM 1: Damage Calculation (AttackSystem.calculateDamage)
+--------------------------------------------------------------
+Formula:
+  baseDamage = attackerAttack + weaponBonus
+  if wrongAnswer: baseDamage *= 0.5
+  variance = random(0 to 5)
+  totalDamage = baseDamage + variance
+  defensePenalty = defenderDefense * 0.5
+  finalDamage = max(1, totalDamage - defensePenalty)
+
+Example:
+  Hero Attack = 20, Weapon Bonus = 5, Enemy Defense = 10
+  baseDamage = 20 + 5 = 25
+  variance = 3 (random)
+  totalDamage = 25 + 3 = 28
+  defensePenalty = 10 * 0.5 = 5
+  finalDamage = 28 - 5 = 23
+
+ALGORITHM 2: Boss Damage Cap (figureOutHowMuchDamageTheBossDoes)
+----------------------------------------------------------------
+Purpose: Ensure the boss can never one-shot the player.
+
+Formula:
+  levelBonus = max(0, heroLevel - 1) * 0.05
+  damageMultiplier = 1 + levelBonus
+  boostedDamage = bossBaseDamage * damageMultiplier
+  maxAllowed = heroMaxHP * 0.20
+  finalDamage = min(boostedDamage, maxAllowed)
+
+Example:
+  Hero is Level 5, Hero Max HP = 400, Boss Base Damage = 100
+  levelBonus = (5 - 1) * 0.05 = 0.20
+  damageMultiplier = 1.20
+  boostedDamage = 100 * 1.20 = 120
+  maxAllowed = 400 * 0.20 = 80
+  finalDamage = min(120, 80) = 80
+
+The boss wanted to deal 120 damage, but was capped at 80 (20% of HP).
+
+ALGORITHM 3: Experience & Level Up (CharacterStats)
+---------------------------------------------------
+When you win:
+  expGained = enemyLevel * 10 * difficultyMultiplier
+  Add to hero.experience.
+
+When experience >= experienceToNextLevel:
+  experience -= experienceToNextLevel
+  level++
+  maxHP *= 1.20
+  attack *= 1.15
+  defense *= 1.10
+  experienceToNextLevel *= 1.50
+
+ALGORITHM 4: Problem Generation (ProblemGenerator)
+--------------------------------------------------
+1. Look up unit name in unitGenerators map.
+2. If found, call that generator.
+3. If not found, look up keywords in topicGenerators map.
+4. If still not found, use grade-based fallback:
+   - Grade 1-3: Addition
+   - Grade 4-6: Multiplication
+   - Grade 7-9: Linear Equations
+   - Grade 10+: Factoring Polynomials
+
+================================================================================
+                PART 9: PLAYER/HERO ASSET GENERATOR (NEW)
+================================================================================
+
+This section explains how the game generates player/hero sprites programmatically
+using the Canvas API. NO external image files are needed - everything is drawn
+with JavaScript code!
+
+-------------------------------------------------------------------------------
+9.1 FILE: src/utils/assetGenerator.js (PLAYER SPRITES)
+-------------------------------------------------------------------------------
+
+PURPOSE: Generates all game sprites (hero, enemies, tiles) using Canvas API.
+         This file contains the complete player/hero sprite generation system.
+
+-------------------------------------------------------------------------------
+9.2 ANIMATION CONFIGURATION
+-------------------------------------------------------------------------------
+
+The game uses a frame-based animation system. Here are the settings:
+
+```javascript
+const ANIMATION_CONFIG = {
+  frameWidth: 48,       // Each frame is 48 pixels wide
+  frameHeight: 48,      // Each frame is 48 pixels tall
+  idleFrames: 4,        // 4 frames for standing still (breathing animation)
+  walkFrames: 6,        // 6 frames for walking
+  attackFrames: 4,      // 4 frames for attack animation
+  hitFrames: 2,         // 2 frames for getting hit (shake effect)
+  victoryFrames: 4      // 4 frames for victory celebration (jump)
+}
+```
+
+EXPLANATION:
+- Each animation is a series of small images (frames) played in sequence.
+- The hero has 5 animation states: idle, walk, attack, hit, victory.
+- At 150ms per frame, the idle animation loops every 600ms (4 frames × 150ms).
+
+-------------------------------------------------------------------------------
+9.3 generateHeroSpriteSheet() - THE MAIN FUNCTION
+-------------------------------------------------------------------------------
+
+This function creates ALL hero animation frames and returns them as an object.
+
+```javascript
+export function generateHeroSpriteSheet(color = '#4a90e2') {
+  // Create empty arrays for each animation type
+  const animations = {
+    idle: [],      // Will hold 4 canvas elements
+    walk: [],      // Will hold 6 canvas elements
+    attack: [],    // Will hold 4 canvas elements
+    hit: [],       // Will hold 2 canvas elements
+    victory: []    // Will hold 4 canvas elements
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // GENERATE IDLE ANIMATION (breathing/bobbing effect)
+  // ═══════════════════════════════════════════════════════════════
+  for (let frame = 0; frame < ANIMATION_CONFIG.idleFrames; frame++) {
+    // Create a new canvas for this frame
+    const canvas = document.createElement('canvas')
+    canvas.width = ANIMATION_CONFIG.frameWidth   // 48
+    canvas.height = ANIMATION_CONFIG.frameHeight // 48
+    const ctx = canvas.getContext('2d')
+    
+    // Calculate bobbing offset using sine wave
+    // Math.sin() returns values between -1 and 1
+    // Multiplying by 2 gives us a 4-pixel vertical range (-2 to +2)
+    const bobOffset = Math.sin((frame / ANIMATION_CONFIG.idleFrames) * Math.PI * 2) * 2
+    
+    // Draw the hero at center (24) with vertical offset
+    drawHeroFrame(ctx, color, 24, 28 + bobOffset, frame, 'idle')
+    animations.idle.push(canvas)
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // GENERATE WALK ANIMATION (leg movement)
+  // ═══════════════════════════════════════════════════════════════
+  for (let frame = 0; frame < ANIMATION_CONFIG.walkFrames; frame++) {
+    const canvas = document.createElement('canvas')
+    canvas.width = ANIMATION_CONFIG.frameWidth
+    canvas.height = ANIMATION_CONFIG.frameHeight
+    const ctx = canvas.getContext('2d')
+    
+    // Walking phase - sine wave for smooth leg movement
+    const walkPhase = (frame / ANIMATION_CONFIG.walkFrames) * Math.PI * 2
+    const legOffset = Math.sin(walkPhase) * 3  // Legs move 6 pixels total
+    
+    drawHeroFrame(ctx, color, 24, 28, frame, 'walk', legOffset)
+    animations.walk.push(canvas)
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // GENERATE ATTACK ANIMATION (sword swing)
+  // ═══════════════════════════════════════════════════════════════
+  for (let frame = 0; frame < ANIMATION_CONFIG.attackFrames; frame++) {
+    const canvas = document.createElement('canvas')
+    canvas.width = ANIMATION_CONFIG.frameWidth
+    canvas.height = ANIMATION_CONFIG.frameHeight
+    const ctx = canvas.getContext('2d')
+    
+    drawHeroFrame(ctx, color, 24, 28, frame, 'attack')
+    animations.attack.push(canvas)
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // GENERATE HIT ANIMATION (shake effect when damaged)
+  // ═══════════════════════════════════════════════════════════════
+  for (let frame = 0; frame < ANIMATION_CONFIG.hitFrames; frame++) {
+    const canvas = document.createElement('canvas')
+    canvas.width = ANIMATION_CONFIG.frameWidth
+    canvas.height = ANIMATION_CONFIG.frameHeight
+    const ctx = canvas.getContext('2d')
+    
+    // Horizontal shake: -3 pixels on even frames, +3 on odd frames
+    const shakeOffset = frame % 2 === 0 ? -3 : 3
+    drawHeroFrame(ctx, color, 24 + shakeOffset, 28, frame, 'hit')
+    animations.hit.push(canvas)
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // GENERATE VICTORY ANIMATION (jumping celebration)
+  // ═══════════════════════════════════════════════════════════════
+  for (let frame = 0; frame < ANIMATION_CONFIG.victoryFrames; frame++) {
+    const canvas = document.createElement('canvas')
+    canvas.width = ANIMATION_CONFIG.frameWidth
+    canvas.height = ANIMATION_CONFIG.frameHeight
+    const ctx = canvas.getContext('2d')
+    
+    // Jump arc using sine wave - peaks at frame 2 (middle of animation)
+    const jumpOffset = Math.sin((frame / ANIMATION_CONFIG.victoryFrames) * Math.PI) * 8
+    drawHeroFrame(ctx, color, 24, 28 - jumpOffset, frame, 'victory')
+    animations.victory.push(canvas)
+  }
+
+  return animations
+}
+```
+
+-------------------------------------------------------------------------------
+9.4 drawHeroFrame() - DRAWS ONE FRAME OF THE HERO
+-------------------------------------------------------------------------------
+
+This function draws the actual hero character using Canvas drawing commands.
+
+```javascript
+function drawHeroFrame(ctx, color, centerX, centerY, frame, animationType, legOffset = 0) {
+  // Create color variations for shading
+  const darkerColor = shadeColor(color, -30)   // For shadows
+  const lighterColor = shadeColor(color, 30)   // For highlights
+  
+  // ═══════════════════════════════════════════════════════════════
+  // SHADOW (ellipse on the ground)
+  // ═══════════════════════════════════════════════════════════════
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'  // 30% transparent black
+  ctx.beginPath()
+  ctx.ellipse(centerX, centerY + 16, 10, 4, 0, 0, Math.PI * 2)
+  ctx.fill()
+
+  // ═══════════════════════════════════════════════════════════════
+  // BODY (torso - oval shape)
+  // ═══════════════════════════════════════════════════════════════
+  ctx.fillStyle = color
+  ctx.beginPath()
+  ctx.ellipse(centerX, centerY, 8, 10, 0, 0, Math.PI * 2)
+  ctx.fill()
+  
+  // Body highlight (lighter oval on top-left for 3D effect)
+  ctx.fillStyle = lighterColor
+  ctx.beginPath()
+  ctx.ellipse(centerX - 2, centerY - 3, 3, 5, -0.3, 0, Math.PI * 2)
+  ctx.fill()
+
+  // ═══════════════════════════════════════════════════════════════
+  // LEGS (change based on animation type)
+  // ═══════════════════════════════════════════════════════════════
+  ctx.fillStyle = darkerColor
+  if (animationType === 'walk') {
+    // Walking: one leg forward, one back (using legOffset)
+    ctx.fillRect(centerX - 6, centerY + 6, 4, 10 + legOffset)
+    ctx.fillRect(centerX + 2, centerY + 6, 4, 10 - legOffset)
+  } else if (animationType === 'victory') {
+    // Victory: legs spread apart at angle
+    ctx.save()
+    ctx.translate(centerX - 4, centerY + 6)
+    ctx.rotate(-0.2)  // Rotate left leg outward
+    ctx.fillRect(0, 0, 4, 10)
+    ctx.restore()
+    ctx.save()
+    ctx.translate(centerX + 4, centerY + 6)
+    ctx.rotate(0.2)   // Rotate right leg outward
+    ctx.fillRect(-4, 0, 4, 10)
+    ctx.restore()
+  } else {
+    // Standing: straight legs
+    ctx.fillRect(centerX - 6, centerY + 6, 4, 10)
+    ctx.fillRect(centerX + 2, centerY + 6, 4, 10)
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ARMS (change based on animation type)
+  // ═══════════════════════════════════════════════════════════════
+  if (animationType === 'attack') {
+    // Attack: arm extended with sword
+    const armAngle = (frame / ANIMATION_CONFIG.attackFrames) * Math.PI * 0.8 - 0.4
+    ctx.save()
+    ctx.translate(centerX + 6, centerY - 2)
+    ctx.rotate(armAngle)
+    ctx.fillStyle = color
+    ctx.fillRect(0, -2, 12, 4)  // Arm
+    // Sword blade (silver)
+    ctx.fillStyle = '#c0c0c0'
+    ctx.fillRect(12, -3, 10, 2)
+    ctx.fillRect(12, 1, 10, 2)
+    // Sword guard (gold)
+    ctx.fillStyle = '#ffd700'
+    ctx.fillRect(10, -4, 4, 8)
+    ctx.restore()
+    // Left arm (stationary)
+    ctx.fillStyle = color
+    ctx.fillRect(centerX - 12, centerY - 4, 4, 8)
+  } else if (animationType === 'victory') {
+    // Victory: both arms raised
+    ctx.fillStyle = color
+    ctx.save()
+    ctx.translate(centerX - 8, centerY - 2)
+    ctx.rotate(-0.8)
+    ctx.fillRect(0, -2, 10, 4)
+    ctx.restore()
+    ctx.save()
+    ctx.translate(centerX + 8, centerY - 2)
+    ctx.rotate(0.8)
+    ctx.fillRect(-10, -2, 10, 4)
+    ctx.restore()
+  } else {
+    // Normal: arms at sides
+    ctx.fillStyle = color
+    ctx.fillRect(centerX - 12, centerY - 4, 4, 8)
+    ctx.fillRect(centerX + 8, centerY - 4, 4, 8)
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // HEAD (circle with face)
+  // ═══════════════════════════════════════════════════════════════
+  ctx.fillStyle = '#ffdbac'  // Skin color
+  ctx.beginPath()
+  ctx.arc(centerX, centerY - 12, 8, 0, Math.PI * 2)
+  ctx.fill()
+  
+  // Head highlight
+  ctx.fillStyle = '#ffe8cc'
+  ctx.beginPath()
+  ctx.arc(centerX - 2, centerY - 14, 3, 0, Math.PI * 2)
+  ctx.fill()
+
+  // ═══════════════════════════════════════════════════════════════
+  // EYES (two black dots with white highlights)
+  // ═══════════════════════════════════════════════════════════════
+  const eyeOffset = animationType === 'hit' ? 1 : 0  // Eyes shift when hit
+  ctx.fillStyle = '#000'
+  ctx.beginPath()
+  ctx.arc(centerX - 3 + eyeOffset, centerY - 13, 1.5, 0, Math.PI * 2)
+  ctx.arc(centerX + 3 + eyeOffset, centerY - 13, 1.5, 0, Math.PI * 2)
+  ctx.fill()
+  
+  // Eye highlights (white dots)
+  ctx.fillStyle = '#fff'
+  ctx.beginPath()
+  ctx.arc(centerX - 3.5 + eyeOffset, centerY - 13.5, 0.5, 0, Math.PI * 2)
+  ctx.arc(centerX + 2.5 + eyeOffset, centerY - 13.5, 0.5, 0, Math.PI * 2)
+  ctx.fill()
+
+  // ═══════════════════════════════════════════════════════════════
+  // MOUTH (changes with animation)
+  // ═══════════════════════════════════════════════════════════════
+  ctx.strokeStyle = '#000'
+  ctx.lineWidth = 1
+  if (animationType === 'hit') {
+    // Hurt: frown
+    ctx.beginPath()
+    ctx.arc(centerX, centerY - 8, 2, 0, Math.PI)
+    ctx.stroke()
+  } else if (animationType === 'victory') {
+    // Victory: big smile
+    ctx.beginPath()
+    ctx.arc(centerX, centerY - 10, 3, 0, Math.PI)
+    ctx.stroke()
+  } else {
+    // Normal: straight line
+    ctx.beginPath()
+    ctx.moveTo(centerX - 2, centerY - 9)
+    ctx.lineTo(centerX + 2, centerY - 9)
+    ctx.stroke()
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // HAIR (brown, on top of head)
+  // ═══════════════════════════════════════════════════════════════
+  ctx.fillStyle = '#4a3728'  // Dark brown
+  ctx.beginPath()
+  ctx.ellipse(centerX, centerY - 18, 7, 4, 0, Math.PI, Math.PI * 2)
+  ctx.fill()
+  ctx.fillRect(centerX - 7, centerY - 18, 2, 6)  // Left bangs
+  ctx.fillRect(centerX + 5, centerY - 18, 2, 6)  // Right bangs
+}
+```
+
+-------------------------------------------------------------------------------
+9.5 HOW HERO.JS USES THE SPRITE SYSTEM
+-------------------------------------------------------------------------------
+
+The Hero class (src/game/Characters/Hero.js) uses these sprites:
+
+```javascript
+import { generateHeroSpriteSheet } from '../../utils/assetGenerator'
+
+export class Hero {
+  constructor(config = {}) {
+    // ... other setup ...
+    
+    // Animation properties
+    this.animations = null              // Will hold all animation frames
+    this.currentAnimation = 'idle'      // Current animation name
+    this.animationFrame = 0             // Current frame index
+    this.animationTimer = 0             // Time since last frame change
+    this.animationSpeed = 150           // Milliseconds per frame
+    
+    // Generate sprites on creation
+    this.initializeSprites()
+  }
+
+  initializeSprites() {
+    // Generate all animation frames
+    this.animations = generateHeroSpriteSheet('#4a90e2')  // Blue color
+    // Result: {
+    //   idle: [canvas, canvas, canvas, canvas],     // 4 frames
+    //   walk: [canvas, canvas, canvas, canvas, canvas, canvas],  // 6 frames
+    //   attack: [canvas, canvas, canvas, canvas],   // 4 frames
+    //   hit: [canvas, canvas],                      // 2 frames
+    //   victory: [canvas, canvas, canvas, canvas]   // 4 frames
+    // }
+  }
+
+  update(deltaTime) {
+    // Advance animation timer
+    this.animationTimer += deltaTime
+    
+    // Get current animation's frames
+    const currentFrames = this.animations[this.currentAnimation]
+    const frameCount = currentFrames.length
+    
+    // If enough time has passed, advance to next frame
+    if (this.animationTimer > this.animationSpeed) {
+      this.animationFrame = (this.animationFrame + 1) % frameCount  // Loop
+      this.animationTimer = 0
+    }
+  }
+
+  getCurrentFrame() {
+    // Return the canvas element for the current frame
+    const frames = this.animations[this.currentAnimation]
+    return frames[this.animationFrame % frames.length]
+  }
+
+  render(ctx, cameraX, cameraY) {
+    const frame = this.getCurrentFrame()
+    if (frame) {
+      ctx.drawImage(frame, this.x - cameraX, this.y - cameraY)
+    }
+  }
+}
+```
+
+-------------------------------------------------------------------------------
+9.6 COLOR UTILITY FUNCTION
+-------------------------------------------------------------------------------
+
+The shadeColor() function creates lighter/darker versions of colors:
+
+```javascript
+function shadeColor(color, percent) {
+  // Parse hex color to RGB components
+  const num = parseInt(color.replace('#', ''), 16)
+  const amt = Math.round(2.55 * percent)
+  
+  // Extract and modify each component
+  const R = Math.min(255, Math.max(0, (num >> 16) + amt))
+  const G = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amt))
+  const B = Math.min(255, Math.max(0, (num & 0x0000FF) + amt))
+  
+  // Combine back to hex
+  return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)
+}
+
+// Examples:
+// shadeColor('#4a90e2', 30)  -> '#6ab0ff' (lighter)
+// shadeColor('#4a90e2', -30) -> '#2a70c2' (darker)
+```
+
+================================================================================
+                            END OF WALKTHROUGH
+================================================================================
+

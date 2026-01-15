@@ -1,0 +1,484 @@
+{
+  "grades": [
+    {
+      "grade": 1,
+      "name": "Grade 1",
+      "minLevel": 1,
+      "units": [
+        {
+          "name": "Addition & Subtraction to 20",
+          "topics": ["addition to 20", "subtraction from 20", "number bonds", "fact families"],
+          "difficulty": 1,
+          "description": "Recalling addition facts up to 20 and related subtraction facts"
+        },
+        {
+          "name": "2D and 3D Shapes",
+          "topics": ["2D shapes", "3D shapes", "comparing shapes", "sorting shapes"],
+          "difficulty": 1,
+          "description": "Comparing and sorting 2-D and 3-D shapes"
+        },
+        {
+          "name": "Measurement Basics",
+          "topics": ["length comparison", "area comparison", "capacity comparison", "ordering objects"],
+          "difficulty": 1,
+          "description": "Ordering objects by length, area, and capacity"
+        },
+        {
+          "name": "Time Concepts",
+          "topics": ["time cycles", "calendar", "seasons", "daily routines"],
+          "difficulty": 1,
+          "description": "Identifying cycles of time from nature and calendars"
+        }
+      ]
+    },
+    {
+      "grade": 2,
+      "name": "Grade 2",
+      "minLevel": 2,
+      "units": [
+        {
+          "name": "Addition & Subtraction to 100",
+          "topics": ["adding within 100", "subtracting within 100", "regrouping", "mental math"],
+          "difficulty": 2,
+          "description": "Adding and subtracting numbers within 100"
+        },
+        {
+          "name": "Shape Sorting",
+          "topics": ["sorting shapes", "sorting rules", "shape attributes", "classifying shapes"],
+          "difficulty": 2,
+          "description": "Sorting shapes and describing sorting rules"
+        },
+        {
+          "name": "Measuring Length",
+          "topics": ["centimeters", "measuring tools", "comparing lengths", "estimating length"],
+          "difficulty": 2,
+          "description": "Measuring length in centimeters"
+        },
+        {
+          "name": "Time Duration",
+          "topics": ["days", "weeks", "months", "years", "time duration"],
+          "difficulty": 2,
+          "description": "Describing durations of time in days, weeks, months, or years"
+        },
+        {
+          "name": "Data & Graphing",
+          "topics": ["collecting data", "pictographs", "bar graphs", "interpreting graphs"],
+          "difficulty": 2,
+          "description": "Collecting and graphing data"
+        }
+      ]
+    },
+    {
+      "grade": 3,
+      "name": "Grade 3",
+      "minLevel": 3,
+      "units": [
+        {
+          "name": "Addition & Subtraction to 1000",
+          "topics": ["adding to 1000", "subtracting to 1000", "standard algorithm", "regrouping"],
+          "difficulty": 3,
+          "description": "Adding and subtracting numbers within 1,000 using standard algorithms"
+        },
+        {
+          "name": "Multiplication Facts",
+          "topics": ["times tables", "multiplication to 10x10", "division facts", "fact families"],
+          "difficulty": 3,
+          "description": "Recalling multiplication facts up to 10×10 and related division facts"
+        },
+        {
+          "name": "Geometry Lines & Shapes",
+          "topics": ["parallel lines", "perpendicular lines", "equal sides", "shape properties"],
+          "difficulty": 3,
+          "description": "Recognizing parallel, perpendicular, and equal sides in 2-D shapes"
+        },
+        {
+          "name": "Metric Measurement",
+          "topics": ["meters", "centimeters", "kilometers", "metric units"],
+          "difficulty": 3,
+          "description": "Measuring length using metric units"
+        },
+        {
+          "name": "Telling Time",
+          "topics": ["analog clocks", "digital clocks", "hours", "minutes", "elapsed time"],
+          "difficulty": 3,
+          "description": "Telling time using analog and digital clocks"
+        }
+      ]
+    },
+    {
+      "grade": 4,
+      "name": "Grade 4",
+      "minLevel": 4,
+      "units": [
+        {
+          "name": "Operations to 10,000",
+          "topics": ["adding to 10000", "subtracting to 10000", "decimals addition", "decimals subtraction"],
+          "difficulty": 4,
+          "description": "Adding and subtracting numbers within 10,000, including decimals"
+        },
+        {
+          "name": "Multiplication & Division",
+          "topics": ["multiply 3-digit", "divide 3-digit", "one-digit divisor", "standard algorithm"],
+          "difficulty": 4,
+          "description": "Multiplying and dividing 3-digit numbers by one-digit numbers"
+        },
+        {
+          "name": "Classifying Shapes",
+          "topics": ["quadrilaterals", "triangles", "angle measurement", "side measurement"],
+          "difficulty": 4,
+          "description": "Classifying quadrilaterals and triangles using angle and side measurements"
+        },
+        {
+          "name": "Area of Rectangles",
+          "topics": ["area", "rectangles", "square units", "measuring area"],
+          "difficulty": 4,
+          "description": "Measuring and calculating the area of rectangles"
+        },
+        {
+          "name": "Data Representation",
+          "topics": ["bar graphs", "pictographs", "line plots", "interpreting data"],
+          "difficulty": 4,
+          "description": "Representing and interpreting data in various graphs"
+        }
+      ]
+    },
+    {
+      "grade": 5,
+      "name": "Grade 5",
+      "minLevel": 5,
+      "units": [
+        {
+          "name": "Operations to 1,000,000",
+          "topics": ["large numbers", "adding millions", "subtracting millions", "decimal operations"],
+          "difficulty": 5,
+          "description": "Adding and subtracting numbers within 1,000,000, including decimals"
+        },
+        {
+          "name": "Multi-digit Multiplication",
+          "topics": ["multiply 3-digit by 2-digit", "partial products", "standard algorithm"],
+          "difficulty": 5,
+          "description": "Multiplying 3-digit numbers by two-digit numbers"
+        },
+        {
+          "name": "Fractions",
+          "topics": ["common denominators", "adding fractions", "subtracting fractions", "equivalent fractions"],
+          "difficulty": 5,
+          "description": "Adding and subtracting fractions with common denominators"
+        },
+        {
+          "name": "Algebraic Expressions",
+          "topics": ["variables", "writing expressions", "evaluating expressions", "order of operations"],
+          "difficulty": 5,
+          "description": "Writing and evaluating algebraic expressions"
+        },
+        {
+          "name": "Symmetry & Shapes",
+          "topics": ["line symmetry", "rotational symmetry", "classifying shapes", "symmetry patterns"],
+          "difficulty": 5,
+          "description": "Classifying shapes using symmetry"
+        },
+        {
+          "name": "Perimeter & Area",
+          "topics": ["perimeter", "area", "rectangles", "composite shapes"],
+          "difficulty": 5,
+          "description": "Calculating area and perimeter of rectangles"
+        }
+      ]
+    },
+    {
+      "grade": 6,
+      "name": "Grade 6",
+      "minLevel": 6,
+      "units": [
+        {
+          "name": "Four Operations Mastery",
+          "topics": ["addition", "subtraction", "multiplication", "division", "order of operations"],
+          "difficulty": 6,
+          "description": "Performing all four operations using standard algorithms"
+        },
+        {
+          "name": "Multiplying Fractions",
+          "topics": ["fractions times whole numbers", "fraction multiplication", "simplifying fractions"],
+          "difficulty": 6,
+          "description": "Multiplying fractions by natural numbers"
+        },
+        {
+          "name": "Area & Volume",
+          "topics": ["area", "volume", "rectangular prisms", "composite figures"],
+          "difficulty": 6,
+          "description": "Calculating area and volume"
+        },
+        {
+          "name": "Algebraic Equations",
+          "topics": ["solving equations", "one-step equations", "variables", "balancing equations"],
+          "difficulty": 6,
+          "description": "Solving algebraic equations"
+        },
+        {
+          "name": "Data Interpretation",
+          "topics": ["collecting data", "graphing data", "interpreting graphs", "mean", "median", "mode"],
+          "difficulty": 6,
+          "description": "Collecting, graphing, and interpreting data"
+        }
+      ]
+    },
+    {
+      "grade": 7,
+      "name": "Grade 7",
+      "minLevel": 7,
+      "units": [
+        {
+          "name": "Integer Operations",
+          "topics": ["adding integers", "subtracting integers", "multiplying integers", "dividing integers", "negative numbers"],
+          "difficulty": 7,
+          "description": "Adding, subtracting, multiplying, and dividing integers"
+        },
+        {
+          "name": "Fraction Operations",
+          "topics": ["multiplying fractions", "dividing fractions", "mixed numbers", "reciprocals"],
+          "difficulty": 7,
+          "description": "Multiplying and dividing fractions"
+        },
+        {
+          "name": "Two-sided Equations",
+          "topics": ["variables both sides", "solving equations", "algebraic manipulation", "equation solving"],
+          "difficulty": 7,
+          "description": "Solving equations with algebraic terms on both sides"
+        },
+        {
+          "name": "Circles & Cylinders",
+          "topics": ["circles", "circumference", "area of circles", "prisms", "cylinders", "volume"],
+          "difficulty": 7,
+          "description": "Investigating circles and volume of prisms and cylinders"
+        },
+        {
+          "name": "Functions Intro",
+          "topics": ["domain", "range", "function notation", "input output"],
+          "difficulty": 7,
+          "description": "Interpreting domain and range of functions"
+        },
+        {
+          "name": "Probability",
+          "topics": ["theoretical probability", "experimental probability", "outcomes", "sample space"],
+          "difficulty": 7,
+          "description": "Calculating theoretical and experimental probability"
+        }
+      ]
+    },
+    {
+      "grade": 8,
+      "name": "Grade 8",
+      "minLevel": 8,
+      "units": [
+        {
+          "name": "Rational Numbers",
+          "topics": ["rational numbers", "decimals", "fractions", "operations with rationals", "BEDMAS"],
+          "difficulty": 8,
+          "description": "Adding, subtracting, multiplying, and dividing rational numbers"
+        },
+        {
+          "name": "Polynomials Intro",
+          "topics": ["polynomials", "classifying polynomials", "simplifying polynomials", "like terms"],
+          "difficulty": 8,
+          "description": "Classifying and simplifying polynomials"
+        },
+        {
+          "name": "Linear Equations",
+          "topics": ["linear equations", "solving equations", "rational coefficients", "multi-step equations"],
+          "difficulty": 8,
+          "description": "Solving linear equations involving rational numbers"
+        },
+        {
+          "name": "Surface Area",
+          "topics": ["surface area", "3D shapes", "nets", "prisms", "cylinders"],
+          "difficulty": 8,
+          "description": "Exploring surface area of 3-D shapes using 2-D models"
+        },
+        {
+          "name": "Slope of Lines",
+          "topics": ["slope", "rise over run", "linear functions", "rate of change"],
+          "difficulty": 8,
+          "description": "Investigating slope of linear functions"
+        },
+        {
+          "name": "Data Distributions",
+          "topics": ["bar graphs", "histograms", "distribution shape", "data analysis"],
+          "difficulty": 8,
+          "description": "Using bar graphs and histograms to represent data distributions"
+        }
+      ]
+    },
+    {
+      "grade": 9,
+      "name": "Grade 9",
+      "minLevel": 9,
+      "units": [
+        {
+          "name": "Real Numbers",
+          "topics": ["real numbers", "rational numbers", "irrational numbers", "number sets"],
+          "difficulty": 9,
+          "description": "Representing sets of real numbers"
+        },
+        {
+          "name": "Polynomial Operations",
+          "topics": ["expanding polynomials", "factoring polynomials", "distributive property", "FOIL"],
+          "difficulty": 9,
+          "description": "Expanding and factoring polynomials"
+        },
+        {
+          "name": "Linear Inequalities",
+          "topics": ["inequalities", "solving inequalities", "graphing inequalities", "number line"],
+          "difficulty": 9,
+          "description": "Solving linear inequalities"
+        },
+        {
+          "name": "Quadratic Equations Intro",
+          "topics": ["quadratic equations", "factoring quadratics", "zero product property"],
+          "difficulty": 9,
+          "description": "Solving simple quadratic equations"
+        },
+        {
+          "name": "Function Notation",
+          "topics": ["function notation", "set-builder notation", "linear functions", "function analysis"],
+          "difficulty": 9,
+          "description": "Using function and set-builder notations to define linear functions"
+        },
+        {
+          "name": "Box Plots & Statistics",
+          "topics": ["box plots", "quartiles", "median", "data spread", "outliers"],
+          "difficulty": 9,
+          "description": "Using box plots to represent the spread of a distribution"
+        },
+        {
+          "name": "Probability Events",
+          "topics": ["mutually exclusive", "non-mutually exclusive", "compound events", "probability rules"],
+          "difficulty": 9,
+          "description": "Determining probability of mutually exclusive and non-mutually exclusive events"
+        }
+      ]
+    },
+    {
+      "grade": 10,
+      "name": "Math 10-1",
+      "minLevel": 10,
+      "units": [
+        {
+          "name": "Measurement & Conversions",
+          "topics": ["unit conversions", "metric system", "imperial system", "surface area", "volume"],
+          "difficulty": 10,
+          "description": "Measurement and unit conversions between metric and imperial systems"
+        },
+        {
+          "name": "Factoring Polynomials",
+          "topics": ["factoring", "common factors", "trinomials", "difference of squares", "factor completely"],
+          "difficulty": 10,
+          "description": "Factoring polynomials including trinomials and special products"
+        },
+        {
+          "name": "Linear Relations",
+          "topics": ["linear functions", "slope-intercept form", "graphing lines", "parallel lines", "perpendicular lines"],
+          "difficulty": 10,
+          "description": "Understanding and graphing linear relations and functions"
+        },
+        {
+          "name": "Systems of Equations",
+          "topics": ["systems of equations", "substitution", "elimination", "graphing systems", "solution types"],
+          "difficulty": 10,
+          "description": "Solving systems of linear equations using multiple methods"
+        },
+        {
+          "name": "Right Triangle Trigonometry",
+          "topics": ["sine", "cosine", "tangent", "SOH CAH TOA", "right triangles", "solving triangles"],
+          "difficulty": 10,
+          "description": "Trigonometric ratios in right triangles"
+        }
+      ]
+    },
+    {
+      "grade": 20,
+      "name": "Math 20-1",
+      "minLevel": 15,
+      "units": [
+        {
+          "name": "Absolute Value",
+          "topics": ["absolute value", "absolute value equations", "absolute value inequalities", "distance"],
+          "difficulty": 15,
+          "description": "Understanding and solving absolute value expressions and equations"
+        },
+        {
+          "name": "Radicals",
+          "topics": ["radicals", "simplifying radicals", "radical operations", "rationalizing denominators"],
+          "difficulty": 15,
+          "description": "Operations with radical expressions"
+        },
+        {
+          "name": "Rational Expressions",
+          "topics": ["rational expressions", "simplifying rationals", "multiplying rationals", "dividing rationals", "adding rationals"],
+          "difficulty": 15,
+          "description": "Operations with rational expressions and equations"
+        },
+        {
+          "name": "Quadratic Equations",
+          "topics": ["vertex form", "factoring quadratics", "quadratic formula", "discriminant", "completing the square"],
+          "difficulty": 15,
+          "description": "Solving quadratic equations using multiple methods"
+        },
+        {
+          "name": "Sequences & Series",
+          "topics": ["arithmetic sequences", "geometric sequences", "series", "summation", "nth term"],
+          "difficulty": 15,
+          "description": "Arithmetic and geometric sequences and series"
+        },
+        {
+          "name": "Trigonometry - Unit Circle",
+          "topics": ["unit circle", "degrees", "reference angles", "trigonometric functions", "CAST rule"],
+          "difficulty": 15,
+          "description": "Trigonometry using the unit circle and degree measure"
+        }
+      ]
+    },
+    {
+      "grade": 30,
+      "name": "Math 30-1",
+      "minLevel": 20,
+      "units": [
+        {
+          "name": "Function Transformations",
+          "topics": ["transformations", "translations", "reflections", "stretches", "compressions", "inverse functions"],
+          "difficulty": 20,
+          "description": "Transformations of functions including inverse functions"
+        },
+        {
+          "name": "Exponential Functions",
+          "topics": ["exponential functions", "exponential growth", "exponential decay", "compound interest"],
+          "difficulty": 20,
+          "description": "Exponential functions and their applications"
+        },
+        {
+          "name": "Logarithmic Functions",
+          "topics": ["logarithms", "log laws", "logarithmic equations", "natural logarithm", "change of base"],
+          "difficulty": 20,
+          "description": "Logarithmic functions and solving logarithmic equations"
+        },
+        {
+          "name": "Polynomial Functions",
+          "topics": ["polynomial functions", "end behavior", "zeros", "factor theorem", "remainder theorem"],
+          "difficulty": 20,
+          "description": "Analyzing and graphing polynomial functions"
+        },
+        {
+          "name": "Trigonometric Equations",
+          "topics": ["trig equations", "general solutions", "trigonometric identities", "proving identities"],
+          "difficulty": 20,
+          "description": "Solving trigonometric equations and proving identities"
+        },
+        {
+          "name": "Permutations & Combinations",
+          "topics": ["permutations", "combinations", "factorial", "counting principles", "binomial theorem"],
+          "difficulty": 20,
+          "description": "Permutations, combinations, and counting principles"
+        }
+      ]
+    }
+  ]
+}
