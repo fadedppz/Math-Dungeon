@@ -167,15 +167,21 @@ export class CharacterStats {
 
   /**
    * Save stats to local storage
+<<<<<<< HEAD
    * NOTE: We always save maxHP as currentHP so that when the player
    * returns to the menu and starts a new adventure, they have full health.
    * This prevents the bug where damaged HP persisted across game sessions.
+=======
+>>>>>>> 51c1e01cfeceb2729932be4df5d9937fc2c5ab13
    */
   save() {
     try {
       const data = this.toJSON()
+<<<<<<< HEAD
       // Always save with full HP so players start fresh
       data.currentHP = data.maxHP
+=======
+>>>>>>> 51c1e01cfeceb2729932be4df5d9937fc2c5ab13
       localStorage.setItem('math_dungeon_save', JSON.stringify(data))
       console.log('Game saved!', data)
       return true

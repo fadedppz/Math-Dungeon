@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { BattleManager } from '../game/Battle/BattleManager'
 import { Hero } from '../game/Characters/Hero'
+<<<<<<< HEAD
 import { SaveSystem } from '../game/Data/SaveSystem'
+=======
+>>>>>>> 51c1e01cfeceb2729932be4df5d9937fc2c5ab13
 import { getAudioManager } from '../utils/audioManager'
 import ProblemDisplay from './ProblemDisplay'
 import VisualizationPanel from './VisualizationPanel'
@@ -164,6 +167,7 @@ function BattleUI({ gameEngine, onReturnToMap }) {
       if (result.leveledUp) {
         audioManager.playLevelUpSound()
       }
+<<<<<<< HEAD
 
       // Save to leaderboard!
       try {
@@ -179,6 +183,8 @@ function BattleUI({ gameEngine, onReturnToMap }) {
         console.error('Failed to save leaderboard entry:', e)
       }
 
+=======
+>>>>>>> 51c1e01cfeceb2729932be4df5d9937fc2c5ab13
       setTimeout(() => {
         onReturnToMap()
       }, 3000)

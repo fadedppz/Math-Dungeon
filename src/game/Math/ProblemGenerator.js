@@ -202,11 +202,15 @@ export class ProblemGenerator {
     // 2 = Simple Subtraction (10 - 4 = ?)
     // 3 = Missing Number (5 + ? = 8)
     // 4 = Word Problem (Apples!)
+<<<<<<< HEAD
     // 5 = Comparison (Which is bigger?)
     // 6 = Counting On (Start at 7, count 3 more)
     // 7 = Number Bonds (What adds to 10?)
     // 8 = Doubles (5 + 5 = ?)
     const problemType = Math.floor(Math.random() * 8) + 1
+=======
+    const problemType = Math.floor(Math.random() * 4) + 1
+>>>>>>> 51c1e01cfeceb2729932be4df5d9937fc2c5ab13
 
     if (problemType === 1) {
       // ➕ Simple Addition
@@ -227,13 +231,18 @@ export class ProblemGenerator {
       const answer = total - part
       return this.createProblem(`${part} + ? = ${total}`, answer, 'Missing Number', grade, true)
 
+<<<<<<< HEAD
     } else if (problemType === 4) {
+=======
+    } else {
+>>>>>>> 51c1e01cfeceb2729932be4df5d9937fc2c5ab13
       // 🍎 Word Problem
       const apples = Math.floor(Math.random() * 5) + 3
       const moreApples = Math.floor(Math.random() * 4) + 1
       const totalApples = apples + moreApples
       const question = `You have ${apples} apples. You get ${moreApples} more. How many apples do you have?`
       return this.createProblem(question, totalApples, 'Word Problem', grade, true)
+<<<<<<< HEAD
 
     } else if (problemType === 5) {
       // 📊 Comparison
@@ -257,6 +266,8 @@ export class ProblemGenerator {
       // 👯 Doubles
       const num = Math.floor(Math.random() * 10) + 1
       return this.createProblem(`${num} + ${num} = ?`, num + num, 'Doubles', grade, true)
+=======
+>>>>>>> 51c1e01cfeceb2729932be4df5d9937fc2c5ab13
     }
   }
 
@@ -384,6 +395,7 @@ export class ProblemGenerator {
   }
 
   genMultiplicationFacts(grade) {
+<<<<<<< HEAD
     // ═══════════════════════════════════════════════════════════════
     // ✖️ GRADE 3: Multiplication Facts
     // ═══════════════════════════════════════════════════════════════
@@ -419,6 +431,11 @@ export class ProblemGenerator {
       const times = Math.floor(Math.random() * 8) + 3
       return this.createProblem(`Count by ${by}s: What is the ${times}th number?`, by * times, 'Skip Counting', grade, true)
     }
+=======
+    const a = Math.floor(Math.random() * 10) + 1
+    const b = Math.floor(Math.random() * 10) + 1
+    return this.createProblem(`${a} × ${b} = ?`, a * b, 'Multiplication Facts', grade, grade <= 4)
+>>>>>>> 51c1e01cfeceb2729932be4df5d9937fc2c5ab13
   }
 
   genGeometryLines(grade) {
@@ -562,6 +579,7 @@ export class ProblemGenerator {
   }
 
   genFractions(grade) {
+<<<<<<< HEAD
     // ═══════════════════════════════════════════════════════════════
     // 🍕 GRADE 5: Fractions  
     // ═══════════════════════════════════════════════════════════════
@@ -608,6 +626,12 @@ export class ProblemGenerator {
       const ate = Math.floor(Math.random() * (pizza - 1)) + 1
       return this.createProblem(`A pizza is cut into ${pizza} slices. You eat ${ate} slices. What fraction did you eat?`, `${ate}/${pizza}`, 'Fraction Word Problem', grade)
     }
+=======
+    const denom = [2, 3, 4, 5, 6][Math.floor(Math.random() * 5)]
+    const n1 = Math.floor(Math.random() * (denom - 1)) + 1
+    const n2 = Math.floor(Math.random() * (denom - n1)) + 1
+    return this.createProblem(`${n1}/${denom} + ${n2}/${denom} = ?`, `${n1 + n2}/${denom}`, 'Fractions', grade)
+>>>>>>> 51c1e01cfeceb2729932be4df5d9937fc2c5ab13
   }
 
   genAlgebraicExpressions(grade) {
