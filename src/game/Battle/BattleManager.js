@@ -53,6 +53,7 @@ const GAME_DIFFICULTY_SETTINGS = {
     bossAttackMultiplier: 0.5,      // Boss only does 50% damage (gentler)
     playerDamageMultiplier: 1.5,    // You do 150% damage (stronger)
     experienceMultiplier: 0.8,      // You get 80% EXP (better than before!)
+    goldMultiplier: 1.0,            // Normal gold rewards
     wrongAnswerPenalty: 0.3         // Wrong answers still do 30% damage
   },
 
@@ -63,6 +64,7 @@ const GAME_DIFFICULTY_SETTINGS = {
     bossAttackMultiplier: 1.0,      // Boss does 100% damage (normal)
     playerDamageMultiplier: 1.0,    // You do 100% damage (normal)
     experienceMultiplier: 1.2,      // You get 120% EXP (slight bonus!)
+    goldMultiplier: 1.5,            // 150% gold rewards
     wrongAnswerPenalty: 0.5         // Wrong answers still do 50% damage
   },
 
@@ -73,6 +75,7 @@ const GAME_DIFFICULTY_SETTINGS = {
     bossAttackMultiplier: 1.3,      // Boss does 130% damage (hits harder)
     playerDamageMultiplier: 0.8,    // You do 80% damage (weaker)
     experienceMultiplier: 2.5,      // 250% EXP! Huge reward for playing hard mode!
+    goldMultiplier: 3.0,            // 300% gold! Harder = Richer!
     wrongAnswerPenalty: 0.3         // Wrong answers still do 30% damage
   },
 
@@ -83,6 +86,7 @@ const GAME_DIFFICULTY_SETTINGS = {
     bossAttackMultiplier: 1.8,      // Boss does 180% damage (ouch!)
     playerDamageMultiplier: 0.6,    // You do 60% damage (weak)
     experienceMultiplier: 5.0,      // 500% EXP! Insane rewards for the brave!
+    goldMultiplier: 6.0,            // 600% gold! HUGE rewards for nightmare!
     wrongAnswerPenalty: 0.2         // Wrong answers still do 20% damage
   }
 }
@@ -435,7 +439,8 @@ export class BattleManager {
       // Base gold = enemy level × 15
       // Then multiplied by difficulty (harder = more gold!)
       const baseGold = enemyLevel * 15
-      const goldEarned = Math.floor(baseGold * expMultiplier)
+      const goldMultiplier = this.difficultySettings.goldMultiplier || 1.0
+      const goldEarned = Math.floor(baseGold * goldMultiplier)
 
       // Add gold to the hero's stats
       this.hero.stats.gold = (this.hero.stats.gold || 0) + goldEarned
