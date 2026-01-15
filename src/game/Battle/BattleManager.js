@@ -155,11 +155,6 @@ export class BattleManager {
     // A list of messages about what happened during the battle
     // Like: ["Battle started!", "You dealt 10 damage!", etc.]
     this.battleMessageHistory = []
-
-    // ──────────────────────────────────────────────────────────────
-    // 🔄 Question tracking (prevents repetition!)
-    // ──────────────────────────────────────────────────────────────
-    this.askedQuestions = new Set()
   }
 
 
@@ -270,37 +265,6 @@ export class BattleManager {
     console.log('Math unit:', this.unit)
 
     // ──────────────────────────────────────────────────────────────
-    // 🔄 ANTI-REPETITION: Try up to 5 times to get a unique question
-    // ──────────────────────────────────────────────────────────────
-    const maxAttempts = 5
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      this._generateOneProblem()
-
-      // Create a signature for this question
-      const questionSignature = this.currentMathProblem?.question || ''
-
-      // If we haven't asked this before (or we've exhausted attempts), use it!
-      if (!this.askedQuestions.has(questionSignature) || attempt === maxAttempts - 1) {
-        this.askedQuestions.add(questionSignature)
-
-        // Reset tracking after 20 questions to allow variety again
-        if (this.askedQuestions.size > 20) {
-          this.askedQuestions.clear()
-          this.askedQuestions.add(questionSignature)
-        }
-
-        console.log('Created problem:', this.currentMathProblem)
-        return
-      }
-
-      console.log('Question was repeated, trying again...')
-    }
-  }
-
-  // Helper function to generate one problem
-  _generateOneProblem() {
-    // ──────────────────────────────────────────────────────────────
     // Check if we have enough info to make a good problem
     // ──────────────────────────────────────────────────────────────
 
@@ -343,6 +307,8 @@ export class BattleManager {
       // Create a problem for that topic
       this.currentMathProblem = this.mathProblemMaker.generateProblem(this.grade, randomTopic)
     }
+
+    console.log('Created problem:', this.currentMathProblem)
   }
 
 
@@ -396,6 +362,7 @@ export class BattleManager {
     const heroAttackPower = this.hero.stats.attack
     const enemyDefense = this.enemy.stats.defense
 
+    // Pass the full hero stats so weapon bonus gets applied!
     let damageToEnemy = AttackSystem.calculateDamage(
       this.hero.stats,
       { defense: enemyDefense },
@@ -460,21 +427,13 @@ export class BattleManager {
 
       // Calculate experience points earned
       const enemyLevel = this.enemy.stats.level
-      const baseExperience = enemyLevel * 10
-      const expMultiplier = this.difficultySettings.experienceMultiplier
-      const experienceEarned = Math.floor(baseExperience * expMultiplier)
+      const experienceEarned = enemyLevel * 10
 
       // Give the hero their experience!
       const didHeroLevelUp = this.hero.stats.addExperience(experienceEarned)
 
-      // ════════════════════════════════════════════════════════════════
-      // 💰 GOLD REWARD! Players earn gold to buy weapons!
-      // ════════════════════════════════════════════════════════════════
       // Base gold = enemy level × 15
-      // Then multiplied by difficulty (harder = more gold!)
-      const baseGold = enemyLevel * 15
-      const goldMultiplier = this.difficultySettings.goldMultiplier || 1.0
-      const goldEarned = Math.floor(baseGold * goldMultiplier)
+      const goldEarned = enemyLevel * 15
 
       // Add gold to the hero's stats
       this.hero.stats.gold = (this.hero.stats.gold || 0) + goldEarned

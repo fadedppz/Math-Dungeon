@@ -3,34 +3,34 @@ import { DungeonManager } from '../game/Dungeon/DungeonManager'
 import { getAudioManager } from '../utils/audioManager'
 
 const DIFFICULTY_MODES = [
-  { 
-    id: 'easy', 
-    name: 'Easy', 
-    color: '#4ecdc4', 
+  {
+    id: 'easy',
+    name: 'Easy',
+    color: '#4ecdc4',
     emoji: '🌱',
     description: 'Perfect for practice. More time, simpler problems.',
     multiplier: 0.5
   },
-  { 
-    id: 'medium', 
-    name: 'Medium', 
-    color: '#f7dc6f', 
+  {
+    id: 'medium',
+    name: 'Medium',
+    color: '#f7dc6f',
     emoji: '⚔️',
     description: 'Balanced challenge. Standard difficulty.',
     multiplier: 1.0
   },
-  { 
-    id: 'hard', 
-    name: 'Hard', 
-    color: '#ff6b6b', 
+  {
+    id: 'hard',
+    name: 'Hard',
+    color: '#ff6b6b',
     emoji: '🔥',
     description: 'Tough enemies. Harder problems, more damage.',
     multiplier: 1.5
   },
-  { 
-    id: 'nightmare', 
-    name: 'Nightmare', 
-    color: '#9b59b6', 
+  {
+    id: 'nightmare',
+    name: 'Nightmare',
+    color: '#9b59b6',
     emoji: '💀',
     description: 'Only for the brave. Maximum challenge!',
     multiplier: 2.0
@@ -50,7 +50,7 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
     // Get all dungeons (not filtered by level for now, show all)
     const allGrades = dungeonManager.getAvailableGrades()
     setAvailableDungeons(allGrades)
-    
+
     // Auto-select the grade that was clicked on the map
     if (initialGrade && allGrades.length > 0) {
       const gradeToSelect = allGrades.find(d => d.grade === initialGrade)
@@ -76,28 +76,32 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
     }
   }, [selectedGrade, dungeonManager])
 
+  // This handles choosing a Grade (like "Grade 1" or "Grade 6")
   const handleGradeSelect = (grade) => {
     setSelectedGrade(grade)
-    setStep(2)
+    setStep(2) // Move to the next step
   }
 
+  // This handles choosing a Unit (like "Addition" or "Fractions")
   const handleUnitSelect = (unit) => {
     setSelectedUnit(unit)
-    setStep(3)
+    setStep(3) // Move to the final step
   }
 
+  // This starts the battle! It saves your choices to the game engine
+  // so the Battle screen knows what kind of math to give you.
   const handleStartBattle = () => {
     if (selectedGrade && selectedUnit) {
       const audioManager = getAudioManager()
       audioManager.playClickSound()
-      
+
       // Store selection in game engine
       if (gameEngine) {
         gameEngine.selectedGrade = selectedGrade
         gameEngine.selectedUnit = selectedUnit
         gameEngine.selectedDifficulty = selectedDifficulty
       }
-      
+
       onStartBattle()
     }
   }
@@ -120,9 +124,9 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
       overflow: 'hidden'
     }}>
       {/* Header */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '20px',
         padding: '12px 20px',
@@ -131,7 +135,7 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
         border: '1px solid #667eea'
       }}>
         <div>
-          <h1 style={{ 
+          <h1 style={{
             fontSize: '24px',
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             WebkitBackgroundClip: 'text',
@@ -142,7 +146,7 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
             🏰 {selectedGradeInfo?.gradeName || 'Select Dungeon'}
           </h1>
         </div>
-        
+
         {/* Step indicator */}
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {[
@@ -150,8 +154,8 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
             { num: 2, label: 'Unit' },
             { num: 3, label: 'Difficulty' }
           ].map(s => (
-            <div 
-              key={s.num} 
+            <div
+              key={s.num}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -162,7 +166,7 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
                 cursor: step >= s.num ? 'pointer' : 'default',
                 transition: 'all 0.2s',
                 fontSize: '12px'
-              }} 
+              }}
               onClick={() => step >= s.num && setStep(s.num)}
             >
               <span style={{ fontWeight: 'bold' }}>{s.num}</span>
@@ -170,8 +174,8 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
             </div>
           ))}
         </div>
-        
-        <button 
+
+        <button
           onClick={onReturnToMap}
           style={{
             background: 'rgba(255, 255, 255, 0.1)',
@@ -185,13 +189,13 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
       </div>
 
       {/* Main content */}
-      <div style={{ 
+      <div style={{
         flex: 1,
         display: 'flex',
         gap: '20px',
         minHeight: 0
       }}>
-        
+
         {/* Step 1: Grade Selection */}
         <div style={{
           flex: step === 1 ? 2 : 1,
@@ -219,8 +223,8 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
             <span>1. Select Grade</span>
             {selectedGrade && <span style={{ color: '#4ecdc4' }}>✓ {selectedGradeInfo?.gradeName}</span>}
           </div>
-          <div style={{ 
-            display: 'grid', 
+          <div style={{
+            display: 'grid',
             gridTemplateColumns: step === 1 ? 'repeat(3, 1fr)' : '1fr',
             gap: '6px',
             overflowY: 'auto',
@@ -234,10 +238,10 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
                   padding: step === 1 ? '12px' : '8px 10px',
                   textAlign: 'center',
                   fontSize: '13px',
-                  background: selectedGrade === dungeon.grade 
+                  background: selectedGrade === dungeon.grade
                     ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                     : 'rgba(102, 126, 234, 0.1)',
-                  border: selectedGrade === dungeon.grade 
+                  border: selectedGrade === dungeon.grade
                     ? 'none'
                     : '1px solid rgba(102, 126, 234, 0.3)',
                   borderRadius: '8px',
@@ -286,9 +290,9 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
             {selectedUnit && <span style={{ color: '#4ecdc4' }}>✓</span>}
           </div>
           {currentGrade && unitManager ? (
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
               gap: '6px',
               overflowY: 'auto',
               flex: 1
@@ -301,10 +305,10 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
                     padding: '10px 12px',
                     textAlign: 'left',
                     fontSize: '13px',
-                    background: selectedUnit === unit 
+                    background: selectedUnit === unit
                       ? 'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)'
                       : 'rgba(78, 205, 196, 0.1)',
-                    border: selectedUnit === unit 
+                    border: selectedUnit === unit
                       ? 'none'
                       : '1px solid rgba(78, 205, 196, 0.3)',
                     borderRadius: '8px',
@@ -316,8 +320,8 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
                     {unit.name}
                   </div>
                   {step === 2 && (
-                    <div style={{ 
-                      fontSize: '10px', 
+                    <div style={{
+                      fontSize: '10px',
                       opacity: 0.7,
                       display: 'flex',
                       flexWrap: 'wrap',
@@ -341,7 +345,7 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
               ))}
             </div>
           ) : (
-            <div style={{ 
+            <div style={{
               flex: 1,
               display: 'flex',
               alignItems: 'center',
@@ -377,10 +381,10 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
           }}>
             3. Select Difficulty
           </div>
-          
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
+
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
             gap: '8px',
             flex: 1
           }}>
@@ -392,10 +396,10 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
                   padding: '12px',
                   textAlign: 'left',
                   fontSize: '14px',
-                  background: selectedDifficulty === diff.id 
+                  background: selectedDifficulty === diff.id
                     ? `linear-gradient(135deg, ${diff.color}40 0%, ${diff.color}20 100%)`
                     : 'rgba(255, 255, 255, 0.05)',
-                  border: selectedDifficulty === diff.id 
+                  border: selectedDifficulty === diff.id
                     ? `2px solid ${diff.color}`
                     : '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '10px',
@@ -403,15 +407,15 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
                   transition: 'all 0.2s ease'
                 }}
               >
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
                   gap: '10px',
                   marginBottom: '4px'
                 }}>
                   <span style={{ fontSize: '20px' }}>{diff.emoji}</span>
-                  <span style={{ 
-                    fontWeight: 'bold', 
+                  <span style={{
+                    fontWeight: 'bold',
                     color: selectedDifficulty === diff.id ? diff.color : '#fff'
                   }}>
                     {diff.name}
@@ -428,8 +432,8 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
                     x{diff.multiplier}
                   </span>
                 </div>
-                <div style={{ 
-                  fontSize: '11px', 
+                <div style={{
+                  fontSize: '11px',
                   color: '#aaa',
                   marginLeft: '30px'
                 }}>
@@ -438,14 +442,14 @@ function DungeonSelection({ gameEngine, initialGrade, onStartBattle, onReturnToM
               </button>
             ))}
           </div>
-          
+
           {/* Start Battle Button */}
           <div style={{ marginTop: '15px' }}>
             <button
               onClick={handleStartBattle}
               disabled={!selectedGrade || !selectedUnit}
-              style={{ 
-                width: '100%', 
+              style={{
+                width: '100%',
                 padding: '14px',
                 fontSize: '16px',
                 background: selectedGrade && selectedUnit

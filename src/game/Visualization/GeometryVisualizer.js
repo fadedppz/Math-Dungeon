@@ -10,24 +10,22 @@ export class GeometryVisualizer {
     this.height = height
   }
 
-  /**
-   * Draw a square
-   * @param {number} sideLength - Length of side
-   * @param {number} x - X position (center)
-   * @param {number} y - Y position (center)
-   */
+  // This draws a square and labels its sides.
+  // We use the "center" of the square to make it easier to place on screen.
   drawSquare(sideLength, x, y) {
     const halfSide = sideLength / 2
     this.ctx.strokeStyle = '#4a90e2'
     this.ctx.lineWidth = 2
+
+    // Draw the outline of the square
     this.ctx.strokeRect(x - halfSide, y - halfSide, sideLength, sideLength)
-    
-    // Draw labels
+
+    // Draw the numbers that tell you the length of each side
     this.ctx.fillStyle = '#fff'
     this.ctx.font = '12px Arial'
     this.ctx.textAlign = 'center'
-    this.ctx.fillText(`${sideLength}`, x, y + halfSide + 15)
-    this.ctx.fillText(`${sideLength}`, x - halfSide - 15, y)
+    this.ctx.fillText(`${sideLength}`, x, y + halfSide + 15) // Bottom label
+    this.ctx.fillText(`${sideLength}`, x - halfSide - 15, y) // Left label
   }
 
   /**
@@ -41,7 +39,7 @@ export class GeometryVisualizer {
     this.ctx.strokeStyle = '#4a90e2'
     this.ctx.lineWidth = 2
     this.ctx.strokeRect(x - length / 2, y - width / 2, length, width)
-    
+
     // Draw labels
     this.ctx.fillStyle = '#fff'
     this.ctx.font = '12px Arial'
@@ -63,13 +61,13 @@ export class GeometryVisualizer {
     this.ctx.beginPath()
     this.ctx.arc(x, y, radius, 0, Math.PI * 2)
     this.ctx.stroke()
-    
+
     // Draw radius line
     this.ctx.beginPath()
     this.ctx.moveTo(x, y)
     this.ctx.lineTo(x + radius, y)
     this.ctx.stroke()
-    
+
     // Draw label
     this.ctx.fillStyle = '#fff'
     this.ctx.font = '12px Arial'
@@ -93,7 +91,7 @@ export class GeometryVisualizer {
     this.ctx.lineTo(x, y - height)
     this.ctx.closePath()
     this.ctx.stroke()
-    
+
     // Draw labels
     this.ctx.fillStyle = '#fff'
     this.ctx.font = '12px Arial'
@@ -117,10 +115,10 @@ export class GeometryVisualizer {
    */
   renderShape(shapeType, dimensions) {
     this.clear()
-    
+
     const centerX = this.width / 2
     const centerY = this.height / 2
-    
+
     switch (shapeType.toLowerCase()) {
       case 'square':
         this.drawSquare(dimensions.side || dimensions.length || 50, centerX, centerY)

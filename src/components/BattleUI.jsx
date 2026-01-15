@@ -24,48 +24,34 @@ function BattleUI({ gameEngine, onReturnToMap }) {
   const [showVisualization, setShowVisualization] = useState(true)  // Hints visible by default!
   const battleLogRef = useRef(null)
 
+  // This runs when the battle first starts.
+  // It sets up the hero, the enemy, and the math problems.
   useEffect(() => {
-    // Initialize battle
+    // 1. Figure out what grade and unit the player chose
     const grade = gameEngine?.selectedGrade || 1
     const unit = gameEngine?.selectedUnit || { name: 'Number Sense', topics: ['arithmetic'], difficulty: 1 }
     const difficulty = gameEngine?.selectedDifficulty || 'medium'
 
-    console.log('=== BattleUI Initializing ===')
-    console.log('Grade from gameEngine:', gameEngine?.selectedGrade)
-    console.log('Unit from gameEngine:', gameEngine?.selectedUnit)
-    console.log('Difficulty from gameEngine:', gameEngine?.selectedDifficulty)
-    console.log('Using grade:', grade)
-    console.log('Using unit:', unit)
-
-    // ════════════════════════════════════════════════════════════════
-    // 🦸‍♂️ HERO SETUP
-    // ════════════════════════════════════════════════════════════════
-    // We need to make sure we use the REAL hero from the map, 
-    // so that EXP and Gold are saved correctly!
-
+    // 2. Find the Hero!
+    // We try to get the hero from the Map so that their progress (like Gold and EXP) is saved.
     let hero = null
-
-    // Check 1: Is the hero in the map manager? (This is usually where it is!)
     if (gameEngine?.mapManager?.hero) {
-      hero = gameEngine.mapManager.hero
-      console.log('✅ Found persistent hero in MapManager!')
+      hero = gameEngine.mapManager.hero // Use the hero from the map
     }
-    // Check 2: Is it directly on the game engine? (Fallback)
     else if (gameEngine?.hero) {
       hero = gameEngine.hero
-      console.log('✅ Found persistent hero in GameEngine!')
     }
-    // Check 3: No hero found? Create a temp one (but warn!)
     else {
-      console.warn('⚠️ No hero found! Creating a temporary one (Progress wont start)!')
+      // If we can't find a hero, create a temporary one (just in case)
       hero = new Hero({ x: 0, y: 0 })
-      // Try to load saved data at least
       hero.stats.load()
     }
 
+    // 3. Create the BattleManager (the "referee" of the fight)
     const manager = new BattleManager(hero, grade, unit, difficulty)
     manager.startBattle()
 
+    // 4. Update the screen with all the new info
     setBattleManager(manager)
     setCurrentProblem(manager.getCurrentProblem())
     setHeroStats(manager.getHeroStats())
@@ -73,7 +59,7 @@ function BattleUI({ gameEngine, onReturnToMap }) {
     setBattleState(manager.getBattleState())
     setBattleLog(manager.getBattleLog())
 
-    // Play battle start sound
+    // Start the game sound
     getAudioManager().resume()
   }, [gameEngine])
 
@@ -118,26 +104,28 @@ function BattleUI({ gameEngine, onReturnToMap }) {
     }
   }, [battleState, battleManager])
 
-  // Submit answer function (works for both input and multiple choice)
+  // This is called when you click "Attack" or press Enter
   const submitAnswer = (submittedAnswer) => {
+    // 1. If the battle is over or it's not our turn, don't do anything
     if (!battleManager || battleState !== 'player-turn') return
     if (submittedAnswer === '' || submittedAnswer === undefined || submittedAnswer === null) return
 
     const audioManager = getAudioManager()
 
-    // Trigger attack animation
+    // 2. Start the attack animation
     setHeroAnimation('attack')
 
+    // 3. Ask the BattleManager if the answer is correct
     const result = battleManager.submitAnswer(String(submittedAnswer))
 
-    // Play sound based on result
+    // 4. Play sounds
     if (result.correct) {
       audioManager.playAttackSound()
     } else {
       audioManager.playClickSound()
     }
 
-    // Show result feedback
+    // 5. Show the feedback (like "Correct!" or "Wrong!") in a popup
     setLastResult(result)
     setShowResult(true)
     setTimeout(() => setShowResult(false), 1500)

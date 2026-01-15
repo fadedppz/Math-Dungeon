@@ -328,16 +328,11 @@ export class ProblemGenerator {
     const shapes = { 3: 'triangle', 4: 'quadrilateral', 5: 'pentagon', 6: 'hexagon' }
     const correct = shapes[sides]
 
-    // 🧠 Generate smart wrong answers instead of "Option 2"
-    const distractors = Object.values(shapes).filter(s => s !== correct)
-
     return this.createProblem(
       `A shape with ${sides} sides is called a...?`,
       correct,
       'Shape Sorting',
-      grade,
-      true,
-      [correct, ...distractors] // We MUST provide options here!
+      grade
     )
   }
 
@@ -464,7 +459,7 @@ export class ProblemGenerator {
 
   genTellingTime(grade) {
     // ═══════════════════════════════════════════════════════════════
-    // ⏰ GRADE 3: Telling Time (Fixed!)
+    // ⏰ GRADE 3: Telling Time
     // ═══════════════════════════════════════════════════════════════
     const questionType = Math.floor(Math.random() * 4)
 
@@ -472,19 +467,11 @@ export class ProblemGenerator {
       // Reading a time
       const hours = Math.floor(Math.random() * 11) + 1
       const minutes = [0, 15, 30, 45][Math.floor(Math.random() * 4)]
-      const correctTime = `${hours}:${minutes.toString().padStart(2, '0')}`
-      const wrongTimes = [
-        `${hours}:${(minutes + 15) % 60}`.replace(/:([0-9])$/, ':0$1'),
-        `${(hours % 12) + 1}:${minutes.toString().padStart(2, '0')}`,
-        `${hours}:${Math.abs(minutes - 30).toString().padStart(2, '0')}`
-      ]
       return this.createProblem(
         `A clock shows ${hours} o'clock and ${minutes} minutes. What time is it?`,
-        correctTime,
+        `${hours}:${minutes.toString().padStart(2, '0')}`,
         'Telling Time',
-        grade,
-        true,
-        [correctTime, ...wrongTimes]
+        grade
       )
 
     } else if (questionType === 1) {
@@ -496,9 +483,7 @@ export class ProblemGenerator {
         `It's ${startHour}:00. In ${elapsedHours} hour(s), what time will it be?`,
         `${endHour}:00`,
         'Elapsed Time',
-        grade,
-        true,
-        [`${endHour}:00`, `${endHour - 1}:00`, `${endHour + 1}:00`, `${startHour}:${elapsedHours}0`]
+        grade
       )
 
     } else if (questionType === 2) {
@@ -507,9 +492,7 @@ export class ProblemGenerator {
         'How many minutes are in 1 hour?',
         60,
         'Time Facts',
-        grade,
-        true,
-        [60, 30, 100, 45]
+        grade
       )
 
     } else {
@@ -522,14 +505,11 @@ export class ProblemGenerator {
       ]
       const chosen = phrases[Math.floor(Math.random() * phrases.length)]
       const displayHour = chosen.phrase === 'quarter to' ? (hours % 12) + 1 : hours
-      const correctTime = `${hours}:${chosen.minutes.toString().padStart(2, '0')}`
       return this.createProblem(
         `What time is "${chosen.phrase} ${displayHour}"?`,
-        correctTime,
+        `${hours}:${chosen.minutes.toString().padStart(2, '0')}`,
         'Telling Time',
-        grade,
-        true,
-        [correctTime, `${hours}:00`, `${hours}:15`, `${hours}:45`]
+        grade
       )
     }
   }
@@ -562,9 +542,7 @@ export class ProblemGenerator {
         `An angle measuring ${angle}° is classified as...?`,
         correct,
         'Classifying Angles',
-        grade,
-        true,
-        ['acute', 'right', 'obtuse', 'straight']
+        grade
       )
     } else if (questionType === 1) {
       // Triangle by sides
@@ -578,9 +556,7 @@ export class ProblemGenerator {
         `A triangle where ${chosen.desc} is called...?`,
         chosen.name,
         'Classifying Triangles',
-        grade,
-        true,
-        ['equilateral', 'isosceles', 'scalene', 'right']
+        grade
       )
     } else {
       // Quadrilateral identification
@@ -595,9 +571,7 @@ export class ProblemGenerator {
         `A quadrilateral with ${chosen.desc} is called...?`,
         chosen.name,
         'Classifying Quadrilaterals',
-        grade,
-        true,
-        ['square', 'rectangle', 'rhombus', 'trapezoid']
+        grade
       )
     }
   }
@@ -628,9 +602,7 @@ export class ProblemGenerator {
   }
 
   genFractions(grade) {
-    // ═══════════════════════════════════════════════════════════════
-    // 🍕 GRADE 5: Fractions  
-    // ═══════════════════════════════════════════════════════════════
+    // 🍕 GRADE 5: Fractions
     const problemType = Math.floor(Math.random() * 6) + 1
 
     if (problemType === 1) {
@@ -638,15 +610,7 @@ export class ProblemGenerator {
       const denom = [2, 3, 4, 5, 6][Math.floor(Math.random() * 5)]
       const n1 = Math.floor(Math.random() * (denom - 1)) + 1
       const n2 = Math.floor(Math.random() * (denom - n1)) + 1
-      const answer = `${n1 + n2}/${denom}`
-      return this.createProblem(
-        `${n1}/${denom} + ${n2}/${denom} = ?`,
-        answer,
-        'Adding Fractions',
-        grade,
-        true,
-        [answer, `${n1 + n2 + 1}/${denom}`, `${n1 + n2}/${denom * 2}`, `${n1}/${denom}`]
-      )
+      return this.createProblem(`${n1}/${denom} + ${n2}/${denom} = ?`, `${n1 + n2}/${denom}`, 'Adding Fractions', grade)
 
     } else if (problemType === 2) {
       // Comparing fractions
@@ -654,49 +618,33 @@ export class ProblemGenerator {
       const n1 = Math.floor(Math.random() * (denom - 1)) + 1
       const n2 = Math.floor(Math.random() * (denom - 1)) + 1
       const bigger = n1 > n2 ? `${n1}/${denom}` : `${n2}/${denom}`
-      return this.createProblem(`Which is bigger: ${n1}/${denom} or ${n2}/${denom}?`, bigger, 'Comparing Fractions', grade, true, [`${n1}/${denom}`, `${n2}/${denom}`])
+      return this.createProblem(`Which is bigger: ${n1}/${denom} or ${n2}/${denom}?`, bigger, 'Comparing Fractions', grade)
 
     } else if (problemType === 3) {
       // Equivalent fractions
       const baseDenom = [2, 3, 4][Math.floor(Math.random() * 3)]
       const baseNum = Math.floor(Math.random() * (baseDenom - 1)) + 1
       const multiplier = Math.floor(Math.random() * 3) + 2
-      return this.createProblem(`${baseNum}/${baseDenom} = ?/${baseDenom * multiplier}`, baseNum * multiplier, 'Equivalent Fractions', grade, true)
+      return this.createProblem(`${baseNum}/${baseDenom} = ?/${baseDenom * multiplier}`, baseNum * multiplier, 'Equivalent Fractions', grade)
 
     } else if (problemType === 4) {
       // Fraction of a whole number
       const whole = [12, 15, 20, 24, 30][Math.floor(Math.random() * 5)]
       const denom = [2, 3, 4, 5][Math.floor(Math.random() * 4)]
-      return this.createProblem(`What is 1/${denom} of ${whole}?`, whole / denom, 'Fraction of Whole', grade, true)
+      return this.createProblem(`What is 1/${denom} of ${whole}?`, whole / denom, 'Fraction of Whole', grade)
 
     } else if (problemType === 5) {
       // Subtracting fractions
       const denom = [4, 5, 6, 8][Math.floor(Math.random() * 4)]
       const n1 = Math.floor(Math.random() * 3) + Math.floor(denom / 2)
       const n2 = Math.floor(Math.random() * Math.floor(denom / 2)) + 1
-      const answer = `${n1 - n2}/${denom}`
-      return this.createProblem(
-        `${n1}/${denom} - ${n2}/${denom} = ?`,
-        answer,
-        'Subtracting Fractions',
-        grade,
-        true,
-        [answer, `${n1 - n2 + 1}/${denom}`, `${n1 + n2}/${denom}`, `${n1}/${denom}`]
-      )
+      return this.createProblem(`${n1}/${denom} - ${n2}/${denom} = ?`, `${n1 - n2}/${denom}`, 'Subtracting Fractions', grade)
 
     } else {
       // Word problem
       const pizza = Math.floor(Math.random() * 6) + 2
       const ate = Math.floor(Math.random() * (pizza - 1)) + 1
-      const answer = `${ate}/${pizza}`
-      return this.createProblem(
-        `A pizza is cut into ${pizza} slices. You eat ${ate} slices. What fraction did you eat?`,
-        answer,
-        'Fraction Word Problem',
-        grade,
-        true,
-        [answer, `${ate + 1}/${pizza}`, `${pizza}/${ate}`, `${pizza - ate}/${pizza}`]
-      )
+      return this.createProblem(`A pizza is cut into ${pizza} slices. You eat ${ate} slices. What fraction did you eat?`, `${ate}/${pizza}`, 'Fraction Word Problem', grade)
     }
   }
 
@@ -707,9 +655,7 @@ export class ProblemGenerator {
   }
 
   genSymmetry(grade) {
-    // ═══════════════════════════════════════════════════════════════
     // 🧊 GRADE 5: Lines of Symmetry
-    // ═══════════════════════════════════════════════════════════════
     const shapes = [
       { name: 'square', lines: 4 },
       { name: 'rectangle', lines: 2 },
@@ -719,19 +665,7 @@ export class ProblemGenerator {
       { name: 'regular pentagon', lines: 5 }
     ]
     const shape = shapes[Math.floor(Math.random() * shapes.length)]
-    const correct = shape.lines
-
-    // Generate wrong answers that are close to correct
-    const distractors = [correct, correct + 1, correct - 1, correct + 2].filter(n => n >= 0)
-
-    return this.createProblem(
-      `How many lines of symmetry does a ${shape.name} have?`,
-      correct,
-      'Symmetry',
-      grade,
-      true,
-      [...new Set(distractors)].slice(0, 4) // Unique values only
-    )
+    return this.createProblem(`How many lines of symmetry does a ${shape.name} have?`, shape.lines, 'Symmetry', grade)
   }
 
   genPerimeterArea(grade) {
@@ -741,9 +675,7 @@ export class ProblemGenerator {
   }
 
   genFourOperations(grade) {
-    // ═══════════════════════════════════════════════════════════════
     // 🧠 GRADE 6: Order of Operations (BEDMAS/PEMDAS)
-    // ═══════════════════════════════════════════════════════════════
     const questionType = Math.floor(Math.random() * 3)
 
     if (questionType === 0) {
@@ -751,25 +683,19 @@ export class ProblemGenerator {
       const a = Math.floor(Math.random() * 10) + 2
       const b = Math.floor(Math.random() * 6) + 2
       const c = Math.floor(Math.random() * 6) + 2
-      const answer = a + (b * c)
-      return this.createProblem(`${a} + ${b} × ${c} = ?`, answer, 'BEDMAS', grade, true)
+      return this.createProblem(`${a} + ${b} × ${c} = ?`, a + (b * c), 'BEDMAS', grade)
     } else if (questionType === 1) {
       // With brackets
       const a = Math.floor(Math.random() * 5) + 2
       const b = Math.floor(Math.random() * 5) + 2
       const c = Math.floor(Math.random() * 4) + 2
-      const answer = (a + b) * c
-      return this.createProblem(`(${a} + ${b}) × ${c} = ?`, answer, 'BEDMAS', grade, true)
+      return this.createProblem(`(${a} + ${b}) × ${c} = ?`, (a + b) * c, 'BEDMAS', grade)
     } else {
       // Division and subtraction
       const a = Math.floor(Math.random() * 30) + 20
-      const b = Math.floor(Math.random() * 8) + 2
-      const c = Math.floor(Math.random() * 4) + 2
-      const answer = a - Math.floor(b / c) * c
-      const divisor = c
+      const divisor = Math.floor(Math.random() * 4) + 2
       const dividend = divisor * (Math.floor(Math.random() * 5) + 2)
-      const answer2 = a - (dividend / divisor)
-      return this.createProblem(`${a} - ${dividend} ÷ ${divisor} = ?`, answer2, 'BEDMAS', grade, true)
+      return this.createProblem(`${a} - ${dividend} ÷ ${divisor} = ?`, a - (dividend / divisor), 'BEDMAS', grade)
     }
   }
 
@@ -777,15 +703,7 @@ export class ProblemGenerator {
     const n = Math.floor(Math.random() * 5) + 1
     const d = Math.floor(Math.random() * 4) + 2
     const w = Math.floor(Math.random() * 5) + 2
-    const answer = `${n * w}/${d}`
-    return this.createProblem(
-      `${n}/${d} × ${w} = ?`,
-      answer,
-      'Multiplying Fractions',
-      grade,
-      true,
-      [answer, `${n * w + 1}/${d}`, `${n}/${d * w}`, `${n + w}/${d}`]
-    )
+    return this.createProblem(`${n}/${d} × ${w} = ?`, `${n * w}/${d}`, 'Multiplying Fractions', grade)
   }
 
   genAreaVolume(grade) {

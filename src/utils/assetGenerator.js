@@ -17,80 +17,81 @@ const ANIMATION_CONFIG = {
   victoryFrames: 4
 }
 
-/**
- * Generate an animated hero sprite sheet
- * Returns multiple frames for different animations
- * @param {string} color - Primary color for the character
- * @returns {Object} Object containing animation frames
- */
+// This function builds a full animated sprite sheet for the hero.
+// It creates different "frames" (like pictures in a flipbook) for each action.
 export function generateHeroSpriteSheet(color = '#4a90e2') {
   const animations = {
-    idle: [],
-    walk: [],
-    attack: [],
-    hit: [],
-    victory: []
+    idle: [],    // Character standing still
+    walk: [],    // Character moving feet
+    attack: [],  // Character swinging sword
+    hit: [],     // Character shaking when hurt
+    victory: []  // Character jumping with joy
   }
 
-  // Generate idle animation (breathing/bobbing)
+  // 1. Generate idle animation (breathing/bobbing)
+  // We loop 4 times to create 4 frames of animation
   for (let frame = 0; frame < ANIMATION_CONFIG.idleFrames; frame++) {
     const canvas = document.createElement('canvas')
     canvas.width = ANIMATION_CONFIG.frameWidth
     canvas.height = ANIMATION_CONFIG.frameHeight
     const ctx = canvas.getContext('2d')
-    
-    // Bobbing offset
+
+    // We use a "sine wave" to make the character bob up and down smoothly
+    // like they are breathing while standing still.
     const bobOffset = Math.sin((frame / ANIMATION_CONFIG.idleFrames) * Math.PI * 2) * 2
-    
+
     drawHeroFrame(ctx, color, 24, 28 + bobOffset, frame, 'idle')
     animations.idle.push(canvas)
   }
 
-  // Generate walk animation
+  // 2. Generate walk animation
+  // Different leg positions make it look like the hero is walking.
   for (let frame = 0; frame < ANIMATION_CONFIG.walkFrames; frame++) {
     const canvas = document.createElement('canvas')
     canvas.width = ANIMATION_CONFIG.frameWidth
     canvas.height = ANIMATION_CONFIG.frameHeight
     const ctx = canvas.getContext('2d')
-    
-    // Walking motion
+
+    // Leg offset changes based on the frame to simulate walking motion
     const walkPhase = (frame / ANIMATION_CONFIG.walkFrames) * Math.PI * 2
     const legOffset = Math.sin(walkPhase) * 3
-    
+
     drawHeroFrame(ctx, color, 24, 28, frame, 'walk', legOffset)
     animations.walk.push(canvas)
   }
 
-  // Generate attack animation
+  // 3. Generate attack animation
   for (let frame = 0; frame < ANIMATION_CONFIG.attackFrames; frame++) {
     const canvas = document.createElement('canvas')
     canvas.width = ANIMATION_CONFIG.frameWidth
     canvas.height = ANIMATION_CONFIG.frameHeight
     const ctx = canvas.getContext('2d')
-    
+
     drawHeroFrame(ctx, color, 24, 28, frame, 'attack')
     animations.attack.push(canvas)
   }
 
-  // Generate hit animation
+  // 4. Generate hit animation (shaking effect)
   for (let frame = 0; frame < ANIMATION_CONFIG.hitFrames; frame++) {
     const canvas = document.createElement('canvas')
     canvas.width = ANIMATION_CONFIG.frameWidth
     canvas.height = ANIMATION_CONFIG.frameHeight
     const ctx = canvas.getContext('2d')
-    
+
+    // Rapidly move the character left and right to show they got hit
     const shakeOffset = frame % 2 === 0 ? -3 : 3
     drawHeroFrame(ctx, color, 24 + shakeOffset, 28, frame, 'hit')
     animations.hit.push(canvas)
   }
 
-  // Generate victory animation
+  // 5. Generate victory animation (jumping up)
   for (let frame = 0; frame < ANIMATION_CONFIG.victoryFrames; frame++) {
     const canvas = document.createElement('canvas')
     canvas.width = ANIMATION_CONFIG.frameWidth
     canvas.height = ANIMATION_CONFIG.frameHeight
     const ctx = canvas.getContext('2d')
-    
+
+    // A single jump for a victory pose
     const jumpOffset = Math.sin((frame / ANIMATION_CONFIG.victoryFrames) * Math.PI) * 8
     drawHeroFrame(ctx, color, 24, 28 - jumpOffset, frame, 'victory')
     animations.victory.push(canvas)
@@ -99,39 +100,38 @@ export function generateHeroSpriteSheet(color = '#4a90e2') {
   return animations
 }
 
-/**
- * Draw a single hero frame
- */
+// This function draws the character's body parts onto a canvas.
+// It's like building the hero out of simple shapes (circles, squares, ellipses).
 function drawHeroFrame(ctx, color, centerX, centerY, frame, animationType, legOffset = 0) {
-  const darkerColor = shadeColor(color, -30)
-  const lighterColor = shadeColor(color, 30)
-  
-  // Shadow
+  const darkerColor = shadeColor(color, -30)   // Darker tone for shading
+  const lighterColor = shadeColor(color, 30)    // Lighter tone for highlights
+
+  // 1. Shadow (a grey oval on the ground)
   ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
   ctx.beginPath()
   ctx.ellipse(centerX, centerY + 16, 10, 4, 0, 0, Math.PI * 2)
   ctx.fill()
 
-  // Body (torso)
+  // 2. The Body (the central torso)
   ctx.fillStyle = color
   ctx.beginPath()
   ctx.ellipse(centerX, centerY, 8, 10, 0, 0, Math.PI * 2)
   ctx.fill()
-  
-  // Body highlight
+
+  // 3. Simple Shading on the torso
   ctx.fillStyle = lighterColor
   ctx.beginPath()
   ctx.ellipse(centerX - 2, centerY - 3, 3, 5, -0.3, 0, Math.PI * 2)
   ctx.fill()
 
-  // Legs with animation
+  // 4. Legs - they move differently based on what the hero is doing
   ctx.fillStyle = darkerColor
   if (animationType === 'walk') {
-    // Walking legs
+    // Walking legs: one leg goes up, one goes down
     ctx.fillRect(centerX - 6, centerY + 6, 4, 10 + legOffset)
     ctx.fillRect(centerX + 2, centerY + 6, 4, 10 - legOffset)
   } else if (animationType === 'victory') {
-    // Victory pose - legs apart
+    // Victory pose: legs apart in a triumphant stance
     ctx.save()
     ctx.translate(centerX - 4, centerY + 6)
     ctx.rotate(-0.2)
@@ -143,32 +143,34 @@ function drawHeroFrame(ctx, color, centerX, centerY, frame, animationType, legOf
     ctx.fillRect(-4, 0, 4, 10)
     ctx.restore()
   } else {
-    // Standing legs
+    // Normal standing legs
     ctx.fillRect(centerX - 6, centerY + 6, 4, 10)
     ctx.fillRect(centerX + 2, centerY + 6, 4, 10)
   }
 
-  // Arms
+  // 5. Arms and Sword
   if (animationType === 'attack') {
-    // Attack pose - arm extended
+    // Sword swing animation - the arm rotates based on the frame
     const armAngle = (frame / ANIMATION_CONFIG.attackFrames) * Math.PI * 0.8 - 0.4
     ctx.save()
     ctx.translate(centerX + 6, centerY - 2)
     ctx.rotate(armAngle)
     ctx.fillStyle = color
     ctx.fillRect(0, -2, 12, 4)
-    // Sword
-    ctx.fillStyle = '#c0c0c0'
+
+    // Draw the sword!
+    ctx.fillStyle = '#c0c0c0' // Blade color
     ctx.fillRect(12, -3, 10, 2)
     ctx.fillRect(12, 1, 10, 2)
-    ctx.fillStyle = '#ffd700'
+    ctx.fillStyle = '#ffd700' // Golden hilt
     ctx.fillRect(10, -4, 4, 8)
     ctx.restore()
-    // Left arm
+
+    // Other arm stays at the side
     ctx.fillStyle = color
     ctx.fillRect(centerX - 12, centerY - 4, 4, 8)
   } else if (animationType === 'victory') {
-    // Victory - arms up
+    // Both arms in the air for victory!
     ctx.fillStyle = color
     ctx.save()
     ctx.translate(centerX - 8, centerY - 2)
@@ -181,61 +183,59 @@ function drawHeroFrame(ctx, color, centerX, centerY, frame, animationType, legOf
     ctx.fillRect(-10, -2, 10, 4)
     ctx.restore()
   } else {
-    // Normal arms
+    // Arms at the sides
     ctx.fillStyle = color
     ctx.fillRect(centerX - 12, centerY - 4, 4, 8)
     ctx.fillRect(centerX + 8, centerY - 4, 4, 8)
   }
 
-  // Head
-  ctx.fillStyle = '#ffdbac'
+  // 6. The Head (including skin, eyes, and hair)
+  ctx.fillStyle = '#ffdbac' // Skin tone
   ctx.beginPath()
   ctx.arc(centerX, centerY - 12, 8, 0, Math.PI * 2)
   ctx.fill()
-  
-  // Head highlight
+
+  // Highlighting on the head
   ctx.fillStyle = '#ffe8cc'
   ctx.beginPath()
   ctx.arc(centerX - 2, centerY - 14, 3, 0, Math.PI * 2)
   ctx.fill()
 
-  // Eyes
+  // 7. Eyes - they change when the character is hit
   const eyeOffset = animationType === 'hit' ? 1 : 0
   ctx.fillStyle = '#000'
   ctx.beginPath()
   ctx.arc(centerX - 3 + eyeOffset, centerY - 13, 1.5, 0, Math.PI * 2)
   ctx.arc(centerX + 3 + eyeOffset, centerY - 13, 1.5, 0, Math.PI * 2)
   ctx.fill()
-  
-  // Eye highlights
+
+  // Tiny highlights in the eyes to make them look "alive"
   ctx.fillStyle = '#fff'
   ctx.beginPath()
   ctx.arc(centerX - 3.5 + eyeOffset, centerY - 13.5, 0.5, 0, Math.PI * 2)
   ctx.arc(centerX + 2.5 + eyeOffset, centerY - 13.5, 0.5, 0, Math.PI * 2)
   ctx.fill()
 
-  // Mouth
+  // 8. The Mouth - smiles for victory, frowns for getting hit
   ctx.strokeStyle = '#000'
   ctx.lineWidth = 1
   if (animationType === 'hit') {
-    // Hurt expression
     ctx.beginPath()
     ctx.arc(centerX, centerY - 8, 2, 0, Math.PI)
     ctx.stroke()
   } else if (animationType === 'victory') {
-    // Happy expression
     ctx.beginPath()
     ctx.arc(centerX, centerY - 10, 3, 0, Math.PI)
     ctx.stroke()
   } else {
-    // Normal expression
+    // Normal straight line mouth
     ctx.beginPath()
     ctx.moveTo(centerX - 2, centerY - 9)
     ctx.lineTo(centerX + 2, centerY - 9)
     ctx.stroke()
   }
 
-  // Hair
+  // 9. Hair on top of the head
   ctx.fillStyle = '#4a3728'
   ctx.beginPath()
   ctx.ellipse(centerX, centerY - 18, 7, 4, 0, Math.PI, Math.PI * 2)
@@ -310,7 +310,7 @@ export function generateEnemySpriteSheet(type = 'slime', color = '#8b4513') {
  */
 function drawEnemyFrame(ctx, type, color, centerX, centerY, frame, animationType) {
   const phase = (frame / 4) * Math.PI * 2
-  
+
   switch (type) {
     case 'slime':
       drawSlimeFrame(ctx, color, centerX, centerY, phase, animationType)
@@ -387,7 +387,7 @@ function drawSlimeFrame(ctx, color, centerX, centerY, phase, animationType) {
 function drawGoblinFrame(ctx, color, centerX, centerY, phase, animationType) {
   const shiftX = Math.sin(phase) * 1.5
   const bobY = Math.cos(phase) * 1
-  
+
   // Shadow
   ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
   ctx.beginPath()
@@ -462,7 +462,7 @@ function drawGoblinFrame(ctx, color, centerX, centerY, phase, animationType) {
  */
 function drawSkeletonFrame(ctx, centerX, centerY, phase, animationType) {
   const rattle = Math.sin(phase * 2) * 1
-  
+
   // Shadow
   ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
   ctx.beginPath()
@@ -485,7 +485,7 @@ function drawSkeletonFrame(ctx, centerX, centerY, phase, animationType) {
   ctx.beginPath()
   ctx.ellipse(centerX, centerY, 8, 10, 0, 0, Math.PI * 2)
   ctx.fill()
-  
+
   // Rib lines
   ctx.strokeStyle = '#e5e5ce'
   ctx.lineWidth = 1
@@ -550,7 +550,7 @@ function drawSkeletonFrame(ctx, centerX, centerY, phase, animationType) {
 function drawDragonFrame(ctx, color, centerX, centerY, phase, animationType) {
   const wingFlap = Math.sin(phase) * 15
   const breathe = Math.sin(phase * 0.5) * 2
-  
+
   color = '#8b0000'
   const lighterColor = shadeColor(color, 40)
   const darkerColor = shadeColor(color, -30)
@@ -573,7 +573,7 @@ function drawDragonFrame(ctx, color, centerX, centerY, phase, animationType) {
   ctx.closePath()
   ctx.fill()
   ctx.restore()
-  
+
   ctx.save()
   ctx.translate(centerX + 10, centerY - 8)
   ctx.rotate(0.5 + wingFlap * 0.02)
@@ -593,7 +593,7 @@ function drawDragonFrame(ctx, color, centerX, centerY, phase, animationType) {
   ctx.moveTo(centerX, centerY + 8)
   ctx.quadraticCurveTo(centerX + 15, centerY + 15, centerX + 20 + Math.sin(phase) * 3, centerY + 10)
   ctx.stroke()
-  
+
   // Tail spike
   ctx.fillStyle = darkerColor
   ctx.beginPath()
@@ -619,7 +619,7 @@ function drawDragonFrame(ctx, color, centerX, centerY, phase, animationType) {
   ctx.fillStyle = color
   ctx.fillRect(centerX - 8, centerY + 10 + breathe, 5, 8)
   ctx.fillRect(centerX + 3, centerY + 10 + breathe, 5, 8)
-  
+
   // Claws
   ctx.fillStyle = '#333'
   for (let i = 0; i < 2; i++) {
@@ -659,7 +659,7 @@ function drawDragonFrame(ctx, color, centerX, centerY, phase, animationType) {
   ctx.ellipse(centerX - 3, centerY - 14, 2.5, 3, 0, 0, Math.PI * 2)
   ctx.ellipse(centerX + 3, centerY - 14, 2.5, 3, 0, 0, Math.PI * 2)
   ctx.fill()
-  
+
   ctx.fillStyle = '#000'
   ctx.beginPath()
   ctx.ellipse(centerX - 3, centerY - 14, 1, 2, 0, 0, Math.PI * 2)
@@ -671,7 +671,7 @@ function drawDragonFrame(ctx, color, centerX, centerY, phase, animationType) {
   ctx.beginPath()
   ctx.ellipse(centerX, centerY - 8, 4, 3, 0, 0, Math.PI * 2)
   ctx.fill()
-  
+
   // Nostrils
   ctx.fillStyle = '#333'
   ctx.beginPath()

@@ -46,22 +46,22 @@ function ProblemDisplay({ problem, onSelectOption }) {
           {problem.topic || 'General'}
         </div>
       </div>
-      
+
       {/* Question */}
-      <h3 style={{ 
-        color: '#fff', 
-        marginBottom: '20px', 
+      <h3 style={{
+        color: '#fff',
+        marginBottom: '20px',
         fontSize: '24px',
         lineHeight: '1.4',
         fontWeight: 'normal'
       }}>
         {problem.question}
       </h3>
-      
-      {/* Multiple choice options */}
+
+      {/* 1. Show MULTIPLE CHOICE buttons if requested */}
       {problem.type === 'multiple-choice' && problem.options && (
-        <div style={{ 
-          display: 'grid', 
+        <div style={{
+          display: 'grid',
           gridTemplateColumns: 'repeat(2, 1fr)',
           gap: '12px',
           marginTop: '20px'
@@ -111,11 +111,11 @@ function ProblemDisplay({ problem, onSelectOption }) {
           ))}
         </div>
       )}
-      
-      {/* Fill in blank hint */}
+
+      {/* 2. Show a TEXT HINT if it's a fill-in-the-blank question */}
       {problem.type === 'fill-in-blank' && (
-        <div style={{ 
-          color: 'rgba(255, 255, 255, 0.6)', 
+        <div style={{
+          color: 'rgba(255, 255, 255, 0.6)',
           fontSize: '14px',
           marginTop: '15px',
           display: 'flex',

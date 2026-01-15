@@ -8,7 +8,7 @@ export class AudioManager {
     this.audioContext = null
     this.masterVolume = 0.5
     this.soundEnabled = true
-    
+
     // Initialize audio context
     this.initAudioContext()
   }
@@ -24,65 +24,57 @@ export class AudioManager {
     }
   }
 
-  /**
-   * Generate a tone
-   * @param {number} frequency - Frequency in Hz
-   * @param {number} duration - Duration in seconds
-   * @param {string} type - Waveform type ('sine', 'square', 'sawtooth', 'triangle')
-   * @returns {OscillatorNode}
-   */
+  // This function generates a beep or sound effect (a "tone").
+  // It uses something called an Oscillator—a virtual electronic instrument!
   generateTone(frequency, duration = 0.1, type = 'sine') {
     if (!this.audioContext || !this.soundEnabled) return null
 
+    // 1. Create the oscillator (makes the sound waves)
     const oscillator = this.audioContext.createOscillator()
+
+    // 2. Create the gain node (controls the volume)
     const gainNode = this.audioContext.createGain()
 
     oscillator.type = type
     oscillator.frequency.value = frequency
 
+    // 3. Make the sound fade out smoothly so it doesn't "pop"
     gainNode.gain.setValueAtTime(0, this.audioContext.currentTime)
     gainNode.gain.linearRampToValueAtTime(this.masterVolume, this.audioContext.currentTime + 0.01)
     gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration)
 
+    // 4. Connect everything together: Oscillator -> Volume Control -> Speakers
     oscillator.connect(gainNode)
     gainNode.connect(this.audioContext.destination)
 
+    // 5. Start and stop the sound
     oscillator.start(this.audioContext.currentTime)
     oscillator.stop(this.audioContext.currentTime + duration)
 
     return oscillator
   }
 
-  /**
-   * Play attack sound
-   */
+  // This plays a quick "thud-thud" sound when someone attacks
   playAttackSound() {
-    // Two-tone attack sound
     this.generateTone(400, 0.1, 'square')
     setTimeout(() => {
       this.generateTone(500, 0.1, 'square')
     }, 50)
   }
 
-  /**
-   * Play victory sound
-   */
+  // This plays a series of happy notes for winning!
   playVictorySound() {
-    // Ascending tones for victory
-    const notes = [261.63, 329.63, 392.00, 523.25] // C, E, G, C (C major chord)
+    const notes = [261.63, 329.63, 392.00, 523.25] // These represent a musical C Major Chord
     notes.forEach((freq, index) => {
       setTimeout(() => {
         this.generateTone(freq, 0.2, 'sine')
-      }, index * 150)
+      }, index * 150) // Play each note a little bit after the last one
     })
   }
 
-  /**
-   * Play defeat sound
-   */
+  // This plays sad, low notes for losing
   playDefeatSound() {
-    // Descending tones for defeat
-    const notes = [392.00, 329.63, 261.63] // G, E, C
+    const notes = [392.00, 329.63, 261.63] // Descending G, E, C
     notes.forEach((freq, index) => {
       setTimeout(() => {
         this.generateTone(freq, 0.3, 'sawtooth')
@@ -129,7 +121,7 @@ export class AudioManager {
     gainNode.connect(this.audioContext.destination)
 
     oscillator.start()
-    
+
     // Store reference to stop later
     this.backgroundMusic = { oscillator, gainNode }
   }

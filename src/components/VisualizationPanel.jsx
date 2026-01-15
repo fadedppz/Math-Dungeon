@@ -473,8 +473,10 @@ function drawNumberHelp(ctx, width, height, problem) {
   }
 }
 
-// Multiplication help
+// This draws groups of dots to help with multiplication.
+// If the problem is 3 × 4, it draws 3 rows of 4 dots.
 function drawMultiplicationHelp(ctx, width, height, problem) {
+  // 1. Find the multiplication numbers (like 3 and 4)
   const numbers = problem.question.match(/(\d+)\s*[×x]\s*(\d+)/i)
 
   if (!numbers) {
@@ -485,16 +487,18 @@ function drawMultiplicationHelp(ctx, width, height, problem) {
   const a = Math.min(parseInt(numbers[1]), 10)
   const b = Math.min(parseInt(numbers[2]), 10)
 
+  // 2. Draw the equation at the top
   ctx.fillStyle = '#667eea'
   ctx.font = 'bold 12px Arial'
   ctx.textAlign = 'center'
   ctx.fillText(`${numbers[1]} × ${numbers[2]} = ${parseInt(numbers[1]) * parseInt(numbers[2])}`, width / 2, 18)
 
-  // Draw array
+  // 3. Draw the dots in a grid (this is called an "array")
   const cellSize = Math.min(15, (width - 60) / b, (height - 50) / a)
   const startX = (width - cellSize * b) / 2
   const startY = 30
 
+  // We loop through rows and columns to place each dot
   for (let row = 0; row < a; row++) {
     for (let col = 0; col < b; col++) {
       ctx.fillStyle = `hsl(${170 + row * 10}, 70%, 50%)`
@@ -509,7 +513,8 @@ function drawMultiplicationHelp(ctx, width, height, problem) {
   ctx.fillText(`${a} rows × ${b} columns = ${a * b} total`, width / 2, height - 8)
 }
 
-// Division help
+// This draws dots split into boxes to help with division.
+// If the problem is 12 ÷ 3, it shows the dots split into 3 groups.
 function drawDivisionHelp(ctx, width, height, problem) {
   const numbers = problem.question.match(/(\d+)\s*÷\s*(\d+)/i)
 
@@ -522,21 +527,23 @@ function drawDivisionHelp(ctx, width, height, problem) {
   const divisor = parseInt(numbers[2])
   const result = Math.floor(total / divisor)
 
+  // 1. Draw the equation at the top
   ctx.fillStyle = '#667eea'
   ctx.font = 'bold 12px Arial'
   ctx.textAlign = 'center'
   ctx.fillText(`${total} ÷ ${divisor} = ${result}`, width / 2, 18)
 
-  // Draw groups
+  // 2. Draw the groups as boxes with dots inside
   const groupSize = Math.min(6, result)
   const groups = Math.min(divisor, 5)
   const dotRadius = Math.min(8, (width - 40) / (groups * (groupSize + 1)))
 
   for (let g = 0; g < groups; g++) {
     const groupX = 30 + g * (width - 60) / groups
-    ctx.fillStyle = '#444'
+    ctx.fillStyle = '#444' // A dark box for each group
     ctx.fillRect(groupX - 5, 35, (dotRadius * 2 + 4) * Math.min(groupSize, 3), height - 60)
 
+    // Put dots inside the group box
     for (let i = 0; i < Math.min(groupSize, 6); i++) {
       const row = Math.floor(i / 3)
       const col = i % 3

@@ -14,7 +14,7 @@ export class MathVisualizer {
     this.numberLine = null
     this.graphPlotter = null
     this.geometryVisualizer = null
-    
+
     this.initialize()
   }
 
@@ -30,32 +30,38 @@ export class MathVisualizer {
     this.canvas.style.borderRadius = '8px'
     this.canvas.style.background = '#1a1a2e'
     this.container.appendChild(this.canvas)
-    
+
     // Initialize visualizers
     this.numberLine = new NumberLine(this.canvas, this.canvas.width, this.canvas.height)
     this.graphPlotter = new GraphPlotter(this.canvas, this.canvas.width, this.canvas.height)
     this.geometryVisualizer = new GeometryVisualizer(this.canvas, this.canvas.width, this.canvas.height)
   }
 
-  /**
-   * Visualize a problem
-   * @param {Object} problem - Problem object
-   */
+  // This is the brain of the visualizer.
+  // It looks at the "topic" of the math problem and decides which 
+  // picture (number line, graph, or shape) is the best one to show!
   visualize(problem) {
     const topic = problem.topic || ''
     const question = problem.question || ''
-    
-    // Determine visualization type based on topic
+
+    // 1. If it's basic math (+ or -), show the Number Line
     if (topic.includes('arithmetic') || topic.includes('addition') || topic.includes('subtraction')) {
       this.visualizeArithmetic(problem)
-    } else if (topic.includes('linear') || topic.includes('function') || topic.includes('graph')) {
+    }
+    // 2. If it's about lines or functions, show a Coordinate Graph
+    else if (topic.includes('linear') || topic.includes('function') || topic.includes('graph')) {
       this.visualizeLinear(problem)
-    } else if (topic.includes('quadratic') || topic.includes('polynomial')) {
+    }
+    // 3. If it's advanced algebra (x²), show a wider Graph
+    else if (topic.includes('quadratic') || topic.includes('polynomial')) {
       this.visualizeQuadratic(problem)
-    } else if (topic.includes('geometry') || topic.includes('area') || topic.includes('shape')) {
+    }
+    // 4. If it's geometry (shapes, area), draw the 2D Shapes
+    else if (topic.includes('geometry') || topic.includes('area') || topic.includes('shape')) {
       this.visualizeGeometry(problem)
-    } else {
-      // Default: show number line
+    }
+    // 5. Default: Just show the number line if we are not sure
+    else {
       this.visualizeArithmetic(problem)
     }
   }
@@ -66,7 +72,7 @@ export class MathVisualizer {
    */
   visualizeArithmetic(problem) {
     this.currentVisualization = 'number-line'
-    
+
     // Extract numbers from question
     const numbers = problem.question.match(/\d+/g)
     if (numbers && numbers.length >= 2) {
@@ -74,7 +80,7 @@ export class MathVisualizer {
       const b = parseInt(numbers[1])
       const hasAddition = problem.question.includes('+')
       const hasSubtraction = problem.question.includes('-')
-      
+
       if (hasAddition) {
         this.numberLine.showOperation(a, b, '+')
       } else if (hasSubtraction) {
@@ -95,11 +101,11 @@ export class MathVisualizer {
   visualizeLinear(problem) {
     this.currentVisualization = 'graph'
     this.graphPlotter.render()
-    
+
     // Try to extract slope and intercept from question
     const slopeMatch = problem.question.match(/slope.*?(-?\d+)/i)
     const interceptMatch = problem.question.match(/y\s*=\s*(-?\d+)x\s*([+-]\d+)/i)
-    
+
     if (interceptMatch) {
       const m = parseInt(interceptMatch[1])
       const b = parseInt(interceptMatch[2])
@@ -118,7 +124,7 @@ export class MathVisualizer {
     this.currentVisualization = 'graph'
     this.graphPlotter.setWindow(-5, 5, -5, 10)
     this.graphPlotter.render()
-    
+
     // Try to extract coefficients
     const quadMatch = problem.question.match(/(-?\d+)x²\s*([+-]\d+)x\s*([+-]\d+)/i)
     if (quadMatch) {
@@ -135,12 +141,12 @@ export class MathVisualizer {
    */
   visualizeGeometry(problem) {
     this.currentVisualization = 'geometry'
-    
+
     // Extract shape type and dimensions
     const question = problem.question.toLowerCase()
     let shapeType = 'square'
     const dimensions = {}
-    
+
     if (question.includes('square')) {
       shapeType = 'square'
       const sideMatch = problem.question.match(/side.*?(\d+)/i)
@@ -162,7 +168,7 @@ export class MathVisualizer {
       if (baseMatch) dimensions.base = parseInt(baseMatch[1])
       if (heightMatch) dimensions.height = parseInt(heightMatch[1])
     }
-    
+
     // Default dimensions if not found
     if (Object.keys(dimensions).length === 0) {
       dimensions.side = 50
@@ -172,7 +178,7 @@ export class MathVisualizer {
       dimensions.base = 60
       dimensions.height = 50
     }
-    
+
     this.geometryVisualizer.renderShape(shapeType, dimensions)
   }
 

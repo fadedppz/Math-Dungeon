@@ -50,7 +50,7 @@ function GameHUD({ gameEngine, onEnterDungeon, onReturnToMenu }) {
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
 
-    // Initialize map manager
+    // 1. Initialize map manager (this handles the hero moving around the lobby)
     const mapManager = new MapManager(canvas.width, canvas.height)
     mapManagerRef.current = mapManager
 
@@ -67,21 +67,22 @@ function GameHUD({ gameEngine, onEnterDungeon, onReturnToMenu }) {
       gameEngine.dungeonManager = dungeonManager
     }
 
-    // Game loop
+    // The Game Loop - this runs 60 times a second to keep the game moving!
     let lastTime = 0
     const gameLoop = (currentTime) => {
       const deltaTime = currentTime - lastTime
       lastTime = currentTime
 
-      // Update map
+      // 1. Update the map (move characters, check collisions)
       mapManager.update(deltaTime)
+      // 2. Draw everything on the screen
       mapManager.render(ctx)
 
-      // Check for nearby entrance
+      // 3. See if the hero is standing near a dungeon portal
       const entrance = mapManager.getNearbyEntrance()
       setNearbyEntrance(entrance)
 
-      // Update hero stats for HUD
+      // 4. Update the Health and Gold bars on the screen
       if (mapManager.hero) {
         setHeroStats({
           level: mapManager.hero.stats.level,
@@ -139,7 +140,7 @@ function GameHUD({ gameEngine, onEnterDungeon, onReturnToMenu }) {
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
       <canvas ref={canvasRef} style={{ display: 'block' }} />
-      
+
       {/* HUD Overlay - Player Stats */}
       <div style={{
         position: 'absolute',
@@ -152,10 +153,10 @@ function GameHUD({ gameEngine, onEnterDungeon, onReturnToMenu }) {
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
         minWidth: '220px'
       }}>
-        <div style={{ 
-          color: '#667eea', 
-          fontSize: '14px', 
-          fontWeight: 'bold', 
+        <div style={{
+          color: '#667eea',
+          fontSize: '14px',
+          fontWeight: 'bold',
           marginBottom: '12px',
           textTransform: 'uppercase',
           letterSpacing: '2px'
@@ -178,7 +179,7 @@ function GameHUD({ gameEngine, onEnterDungeon, onReturnToMenu }) {
                 <span style={{ fontWeight: 'bold', color: '#4a90e2' }}>{heroStats.defense}</span>
               </div>
             </div>
-            
+
             {/* HP Bar */}
             <div style={{ marginBottom: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
@@ -195,9 +196,9 @@ function GameHUD({ gameEngine, onEnterDungeon, onReturnToMenu }) {
                 <div style={{
                   width: `${heroStats.hpPercentage * 100}%`,
                   height: '100%',
-                  background: heroStats.hpPercentage > 0.5 
-                    ? 'linear-gradient(90deg, #4ecdc4 0%, #44a08d 100%)' 
-                    : heroStats.hpPercentage > 0.25 
+                  background: heroStats.hpPercentage > 0.5
+                    ? 'linear-gradient(90deg, #4ecdc4 0%, #44a08d 100%)'
+                    : heroStats.hpPercentage > 0.25
                       ? 'linear-gradient(90deg, #f7dc6f 0%, #f39c12 100%)'
                       : 'linear-gradient(90deg, #ff6b6b 0%, #ee5a6f 100%)',
                   transition: 'width 0.3s ease',
@@ -205,7 +206,7 @@ function GameHUD({ gameEngine, onEnterDungeon, onReturnToMenu }) {
                 }}></div>
               </div>
             </div>
-            
+
             {/* EXP Bar */}
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
@@ -276,10 +277,10 @@ function GameHUD({ gameEngine, onEnterDungeon, onReturnToMenu }) {
           color: '#fff',
           fontSize: '14px'
         }}>
-          <div style={{ 
-            color: '#667eea', 
-            fontSize: '12px', 
-            fontWeight: 'bold', 
+          <div style={{
+            color: '#667eea',
+            fontSize: '12px',
+            fontWeight: 'bold',
             marginBottom: '12px',
             textTransform: 'uppercase',
             letterSpacing: '2px'
@@ -315,21 +316,21 @@ function GameHUD({ gameEngine, onEnterDungeon, onReturnToMenu }) {
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
           overflow: 'hidden'
         }}>
-          <canvas 
+          <canvas
             ref={el => {
               if (el && mapManagerRef.current) {
                 const ctx = el.getContext('2d')
                 el.width = 180
                 el.height = 180
-                
+
                 // Draw minimap
                 const mapManager = mapManagerRef.current
                 const scale = 180 / mapManager.mapWidth
-                
+
                 // Background
                 ctx.fillStyle = '#1a1a2e'
                 ctx.fillRect(0, 0, 180, 180)
-                
+
                 // Lobby
                 ctx.fillStyle = 'rgba(102, 126, 234, 0.3)'
                 ctx.fillRect(
@@ -338,7 +339,7 @@ function GameHUD({ gameEngine, onEnterDungeon, onReturnToMenu }) {
                   mapManager.lobbyBounds.width * scale,
                   mapManager.lobbyBounds.height * scale
                 )
-                
+
                 // Dungeon entrances
                 mapManager.dungeonEntrances.forEach(entrance => {
                   ctx.fillStyle = entrance.color
@@ -349,7 +350,7 @@ function GameHUD({ gameEngine, onEnterDungeon, onReturnToMenu }) {
                     entrance.height * scale
                   )
                 })
-                
+
                 // Player position
                 ctx.fillStyle = '#4ecdc4'
                 ctx.beginPath()
@@ -361,7 +362,7 @@ function GameHUD({ gameEngine, onEnterDungeon, onReturnToMenu }) {
                   Math.PI * 2
                 )
                 ctx.fill()
-                
+
                 // Camera viewport
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'
                 ctx.lineWidth = 1
@@ -407,29 +408,29 @@ function GameHUD({ gameEngine, onEnterDungeon, onReturnToMenu }) {
           textAlign: 'center',
           animation: 'pulse 2s infinite'
         }}>
-          <div style={{ 
-            fontSize: '24px', 
-            fontWeight: 'bold', 
+          <div style={{
+            fontSize: '24px',
+            fontWeight: 'bold',
             marginBottom: '8px',
             color: nearbyEntrance.color
           }}>
             {nearbyEntrance.gradeName}
           </div>
-          <div style={{ 
+          <div style={{
             fontSize: '16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px'
           }}>
-            Press 
+            Press
             <span style={{
               background: nearbyEntrance.color,
               color: '#000',
               padding: '4px 12px',
               borderRadius: '6px',
               fontWeight: 'bold'
-            }}>E</span> 
+            }}>E</span>
             to Enter
           </div>
         </div>
